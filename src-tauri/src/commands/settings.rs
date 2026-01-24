@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 /// Application settings structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Settings {
     /// Global hotkey for triggering recording
     pub hotkey: String,

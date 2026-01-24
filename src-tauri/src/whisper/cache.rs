@@ -16,6 +16,8 @@ struct CachedModel {
     context: WhisperContext,
     /// Model identifier (name)
     model_id: String,
+    /// Whether this model was loaded with GPU
+    use_gpu: bool,
     /// Last time this model was used
     last_used: Instant,
 }
@@ -45,42 +47,49 @@ impl ModelCache {
 
     /// Gets or loads a model, returning a reference to use for transcription
     ///
-    /// If the requested model is already cached, returns it immediately.
-    /// If a different model is cached, unloads it first.
+    /// If the requested model is already cached with the same GPU setting, returns it immediately.
+    /// If a different model or GPU setting is requested, unloads the current one first.
     /// Updates the last_used timestamp on access.
-    pub fn get_or_load(&self, model_id: &str, model_path: PathBuf) -> Result<ModelGuard<'_>> {
+    pub fn get_or_load(&self, model_id: &str, model_path: PathBuf, use_gpu: bool) -> Result<ModelGuard<'_>> {
         let mut cached = self.cached.lock();
 
-        // Check if we have the right model cached
+        // Check if we have the right model cached with the same GPU setting
         if let Some(ref mut model) = *cached {
-            if model.model_id == model_id {
+            if model.model_id == model_id && model.use_gpu == use_gpu {
                 // Update last used time
                 model.last_used = Instant::now();
-                log::info!("Using cached model: {}", model_id);
+                log::info!("Using cached model: {} (GPU: {})", model_id, use_gpu);
                 return Ok(ModelGuard {
                     cache: self,
                     _marker: std::marker::PhantomData,
                 });
             } else {
-                // Different model requested, unload current one
-                log::info!("Unloading cached model '{}' to load '{}'", model.model_id, model_id);
+                // Different model or GPU setting requested, unload current one
+                log::info!(
+                    "Unloading cached model '{}' (GPU: {}) to load '{}' (GPU: {})",
+                    model.model_id, model.use_gpu, model_id, use_gpu
+                );
             }
         }
 
-        // Load the new model
-        log::info!("Loading model '{}' from {:?}", model_id, model_path);
+        // Load the new model with specified GPU setting
+        log::info!("Loading model '{}' from {:?} (GPU: {})", model_id, model_path, use_gpu);
+        let mut params = WhisperContextParameters::default();
+        params.use_gpu(use_gpu);
+
         let context = WhisperContext::new_with_params(
             model_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
-            WhisperContextParameters::default(),
+            params,
         )?;
 
         *cached = Some(CachedModel {
             context,
             model_id: model_id.to_string(),
+            use_gpu,
             last_used: Instant::now(),
         });
 
-        log::info!("Model '{}' loaded and cached", model_id);
+        log::info!("Model '{}' loaded and cached (GPU: {})", model_id, use_gpu);
 
         Ok(ModelGuard {
             cache: self,

@@ -40,7 +40,7 @@ export function useSettings() {
       try {
         const updatedSettings = { ...settings, ...newSettings };
         await saveSettings(updatedSettings);
-        setSettings(newSettings);
+        setSettings(updatedSettings);
       } catch (error) {
         console.error("Failed to save settings:", error);
       }

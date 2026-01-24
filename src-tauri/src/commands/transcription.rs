@@ -1,5 +1,7 @@
 use crate::{AppState, whisper::cache::get_model_cache};
+use crate::commands::settings::get_settings;
 use std::sync::Arc;
+use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, State};
 use whisper_rs::{FullParams, SamplingStrategy};
 
@@ -20,7 +22,11 @@ pub async fn transcribe_audio(
     model: String,
     _state: State<'_, Arc<AppState>>,
 ) -> Result<String, String> {
-    log::info!("Transcribing audio file: {} with model: {}", audio_path, model);
+    // Get settings to check GPU preference
+    let settings = get_settings().await.map_err(|e| format!("Failed to get settings: {}", e))?;
+    let use_gpu = settings.use_gpu;
+
+    log::info!("Transcribing audio file: {} with model: {} (GPU: {})", audio_path, model, use_gpu);
 
     // Emit processing started
     let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": true }));
@@ -31,16 +37,53 @@ pub async fn transcribe_audio(
 
     // Check if model exists
     if !model_path.exists() {
+        log::error!("Model file not found at {:?}", model_path);
         let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
         return Err(format!("Model '{}' not found. Please download it first.", model));
     }
 
-    // Load audio file
-    let mut reader = hound::WavReader::open(&audio_path)
+    // Clone values for the blocking task
+    let audio_path_clone = audio_path.clone();
+    let model_clone = model.clone();
+    let app_clone = app.clone();
+
+    // Run the CPU-intensive transcription in a separate thread using oneshot channel
+    let (tx, rx) = tokio::sync::oneshot::channel();
+
+    std::thread::spawn(move || {
+        let result = transcribe_blocking(audio_path_clone, model_clone, model_path, use_gpu);
+        let _ = tx.send(result);
+    });
+
+    let text = rx.await
+        .map_err(|e| {
+            let _ = app_clone.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+            format!("Channel receive error: {}", e)
+        })?
         .map_err(|e| {
             let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-            format!("Failed to open audio file: {}", e)
+            e
         })?;
+
+    log::info!("Transcription completed: {} characters", text.len());
+
+    // Emit processing completed with transcription
+    let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+    let _ = app.emit("transcription-complete", serde_json::json!({ "text": text }));
+
+    Ok(text)
+}
+
+/// Blocking transcription function to be run in a separate thread
+fn transcribe_blocking(
+    audio_path: String,
+    model: String,
+    model_path: PathBuf,
+    use_gpu: bool,
+) -> Result<String, String> {
+    // Load audio file
+    let mut reader = hound::WavReader::open(&audio_path)
+        .map_err(|e| format!("Failed to open audio file: {}", e))?;
 
     // Convert audio to f32 samples
     let audio_data: Vec<f32> = reader
@@ -49,12 +92,10 @@ pub async fn transcribe_audio(
         .collect();
 
     // Get or load model from cache (stays loaded for 5 minutes after last use)
+    // Pass the use_gpu setting - if it changes, the model will be reloaded
     let cache = get_model_cache();
-    let _guard = cache.get_or_load(&model, model_path)
-        .map_err(|e| {
-            let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-            format!("Failed to load model: {}", e)
-        })?;
+    let _guard = cache.get_or_load(&model, model_path, use_gpu)
+        .map_err(|e| format!("Failed to load model: {}", e))?;
 
     // Transcribe using cached model
     let text = cache.with_context(|context| {
@@ -90,16 +131,7 @@ pub async fn transcribe_audio(
         }
 
         Ok(result.trim().to_string())
-    }).map_err(|e: anyhow::Error| {
-        let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-        format!("Failed to transcribe audio: {}", e)
-    })?;
-
-    log::info!("Transcription completed: {} characters", text.len());
-
-    // Emit processing completed with transcription
-    let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-    let _ = app.emit("transcription-complete", serde_json::json!({ "text": text }));
+    }).map_err(|e: anyhow::Error| format!("Failed to transcribe audio: {}", e))?;
 
     Ok(text)
 }

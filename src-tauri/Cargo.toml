@@ -20,7 +20,7 @@ tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-log = "2"
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
-whisper-rs = "0.15"
+whisper-rs = { version = "0.15", features = ["cuda"] }
 cpal = "0.15"
 hound = "3.5"
 serde = { version = "1", features = ["derive"] }
