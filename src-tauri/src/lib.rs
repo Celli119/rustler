@@ -51,6 +51,9 @@ pub fn run() {
             // Initialize app state
             app.manage(Arc::new(AppState::default()));
 
+            // Start the model cache cleanup task (unloads models after 5 min of inactivity)
+            whisper::cache::start_cleanup_task();
+
             // Setup system tray icon
             #[cfg(desktop)]
             {

@@ -1,6 +1,7 @@
-use crate::{AppState, whisper::transcriber::Transcriber};
+use crate::{AppState, whisper::cache::get_model_cache};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
+use whisper_rs::{FullParams, SamplingStrategy};
 
 /// Transcribes audio file to text using the specified Whisper model
 ///
@@ -30,12 +31,16 @@ pub async fn transcribe_audio(
 
     // Check if model exists
     if !model_path.exists() {
+        let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
         return Err(format!("Model '{}' not found. Please download it first.", model));
     }
 
     // Load audio file
     let mut reader = hound::WavReader::open(&audio_path)
-        .map_err(|e| format!("Failed to open audio file: {}", e))?;
+        .map_err(|e| {
+            let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+            format!("Failed to open audio file: {}", e)
+        })?;
 
     // Convert audio to f32 samples
     let audio_data: Vec<f32> = reader
@@ -43,13 +48,52 @@ pub async fn transcribe_audio(
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
-    // Create transcriber
-    let transcriber = Transcriber::new(model_path)
-        .map_err(|e| format!("Failed to create transcriber: {}", e))?;
+    // Get or load model from cache (stays loaded for 5 minutes after last use)
+    let cache = get_model_cache();
+    let _guard = cache.get_or_load(&model, model_path)
+        .map_err(|e| {
+            let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+            format!("Failed to load model: {}", e)
+        })?;
 
-    // Transcribe audio
-    let text = transcriber.transcribe(&audio_data)
-        .map_err(|e| format!("Failed to transcribe audio: {}", e))?;
+    // Transcribe using cached model
+    let text = cache.with_context(|context| {
+        log::info!("Transcribing {} audio samples", audio_data.len());
+
+        // Create transcription parameters
+        let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+        params.set_n_threads(4);
+        params.set_translate(false);
+        params.set_language(Some("en"));
+        params.set_print_special(false);
+        params.set_print_progress(false);
+        params.set_print_realtime(false);
+        params.set_print_timestamps(false);
+
+        // Create state and run transcription
+        let mut state = context.create_state()?;
+        state.full(params, &audio_data)?;
+
+        // Extract transcribed text
+        let num_segments = state.full_n_segments();
+        let mut result = String::new();
+
+        for i in 0..num_segments {
+            if let Some(segment) = state.get_segment(i) {
+                if let Ok(text) = segment.to_str() {
+                    result.push_str(text);
+                    if i < num_segments - 1 {
+                        result.push(' ');
+                    }
+                }
+            }
+        }
+
+        Ok(result.trim().to_string())
+    }).map_err(|e: anyhow::Error| {
+        let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+        format!("Failed to transcribe audio: {}", e)
+    })?;
 
     log::info!("Transcription completed: {} characters", text.len());
 

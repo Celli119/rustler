@@ -2,12 +2,14 @@ use anyhow::Result;
 use std::path::PathBuf;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
-/// Audio transcriber using Whisper
+/// Audio transcriber using Whisper (kept for standalone use cases)
+#[allow(dead_code)]
 pub struct Transcriber {
     /// Whisper context for transcription
     context: WhisperContext,
 }
 
+#[allow(dead_code)]
 impl Transcriber {
     /// Creates a new transcriber with the specified model
     ///

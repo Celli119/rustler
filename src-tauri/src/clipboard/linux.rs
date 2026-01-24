@@ -30,9 +30,12 @@ pub fn paste_text(text: &str) -> Result<()> {
 fn paste_text_x11(text: &str) -> Result<()> {
     log::info!("Using xdotool for X11");
 
+    let display = std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string());
+
     // First, copy to clipboard using xclip
     let mut child = Command::new("xclip")
         .args(["-selection", "clipboard"])
+        .env("DISPLAY", &display)
         .stdin(std::process::Stdio::piped())
         .spawn()
         .context("Failed to spawn xclip")?;
@@ -48,6 +51,7 @@ fn paste_text_x11(text: &str) -> Result<()> {
     // Then paste using xdotool
     let output = Command::new("xdotool")
         .args(["key", "ctrl+v"])
+        .env("DISPLAY", &display)
         .output()
         .context("Failed to execute xdotool")?;
 
@@ -101,6 +105,7 @@ fn copy_to_x11_clipboard(text: &str) {
     let result = (|| -> Result<()> {
         let mut child = Command::new("xclip")
             .args(["-selection", "clipboard"])
+            .env("DISPLAY", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()))
             .stdin(std::process::Stdio::piped())
             .spawn()
             .context("Failed to spawn xclip")?;
@@ -140,6 +145,7 @@ fn simulate_paste_wtype() -> Result<()> {
 fn simulate_paste_xdotool() -> Result<()> {
     let output = Command::new("xdotool")
         .args(["key", "ctrl+v"])
+        .env("DISPLAY", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()))
         .output()
         .context("Failed to execute xdotool")?;
 
