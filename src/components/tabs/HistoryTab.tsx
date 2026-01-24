@@ -1,13 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { History, Trash2, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { TranscriptionItem } from "@/components/TranscriptionItem";
 import { useHistoryStore } from "@/stores/historyStore";
 
 export function HistoryTab() {
   const { records, isLoading, loadHistory, removeFromHistory, clearAllHistory } =
     useHistoryStore();
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   useEffect(() => {
     loadHistory();
@@ -26,9 +38,8 @@ export function HistoryTab() {
   };
 
   const handleClearAll = async () => {
-    if (window.confirm("Are you sure you want to clear all history?")) {
-      await clearAllHistory();
-    }
+    await clearAllHistory();
+    setClearDialogOpen(false);
   };
 
   return (
@@ -39,15 +50,34 @@ export function HistoryTab() {
           <h2 className="text-lg font-semibold">Recent Transcriptions</h2>
         </div>
         {records.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive"
-            onClick={handleClearAll}
-          >
-            <Trash2 className="size-4 mr-1" />
-            Clear All
-          </Button>
+          <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="size-4 mr-1" />
+                  Clear All
+                </Button>
+              }
+            />
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear all history?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete all {records.length} transcription{records.length !== 1 ? "s" : ""} from your history. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={handleClearAll}>
+                  Clear All
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
 
