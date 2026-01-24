@@ -1,6 +1,10 @@
 export { PillOverlay } from "./PillOverlay";
 export { FloatingRecordButton } from "./FloatingRecordButton";
-export { SettingsPanel } from "./SettingsPanel";
 export { ModelSelector } from "./ModelSelector";
 export { HotkeyConfig } from "./HotkeyConfig";
 export { GpuToggle } from "./GpuToggle";
+export { ThemeProvider } from "./ThemeProvider";
+export { ThemeToggle } from "./ThemeToggle";
+export { AppLayout } from "./layout/AppLayout";
+export { AppHeader } from "./layout/AppHeader";
+export { TabNavigation } from "./layout/TabNavigation";
