@@ -60,11 +60,26 @@ fn paste_text_x11(text: &str) -> Result<()> {
     Ok(())
 }
 
-/// Pastes text using wtype on Wayland
+/// Pastes text on Wayland, handling both native Wayland and XWayland apps
 fn paste_text_wayland(text: &str) -> Result<()> {
-    log::info!("Using wtype for Wayland");
+    log::info!("Using Wayland paste with XWayland support");
 
-    // First, copy to clipboard using wl-copy
+    // Copy to both Wayland and X11 clipboards for compatibility
+    copy_to_wayland_clipboard(text)?;
+    copy_to_x11_clipboard(text);  // Best effort, don't fail if xclip missing
+
+    // Try wtype first (native Wayland), fall back to xdotool (XWayland)
+    if let Err(wtype_err) = simulate_paste_wtype() {
+        log::warn!("wtype failed ({}), trying xdotool for XWayland", wtype_err);
+        simulate_paste_xdotool()?;
+    }
+
+    log::info!("Text pasted successfully");
+    Ok(())
+}
+
+/// Copy text to Wayland clipboard using wl-copy
+fn copy_to_wayland_clipboard(text: &str) -> Result<()> {
     let mut child = Command::new("wl-copy")
         .stdin(std::process::Stdio::piped())
         .spawn()
@@ -77,10 +92,39 @@ fn paste_text_wayland(text: &str) -> Result<()> {
     }
 
     child.wait().context("Failed to wait for wl-copy")?;
+    log::info!("Copied to Wayland clipboard");
+    Ok(())
+}
 
-    // Then paste using wtype
+/// Copy text to X11 clipboard using xclip (for XWayland apps)
+fn copy_to_x11_clipboard(text: &str) {
+    let result = (|| -> Result<()> {
+        let mut child = Command::new("xclip")
+            .args(["-selection", "clipboard"])
+            .stdin(std::process::Stdio::piped())
+            .spawn()
+            .context("Failed to spawn xclip")?;
+
+        if let Some(mut stdin) = child.stdin.take() {
+            use std::io::Write;
+            stdin.write_all(text.as_bytes())
+                .context("Failed to write to xclip")?;
+        }
+
+        child.wait().context("Failed to wait for xclip")?;
+        log::info!("Copied to X11 clipboard");
+        Ok(())
+    })();
+
+    if let Err(e) = result {
+        log::warn!("Failed to copy to X11 clipboard: {}", e);
+    }
+}
+
+/// Simulate Ctrl+V using wtype (native Wayland)
+fn simulate_paste_wtype() -> Result<()> {
     let output = Command::new("wtype")
-        .args(["-M", "ctrl", "v"])
+        .args(["-M", "ctrl", "v", "-m", "ctrl"])
         .output()
         .context("Failed to execute wtype")?;
 
@@ -89,6 +133,20 @@ fn paste_text_wayland(text: &str) -> Result<()> {
         return Err(anyhow::anyhow!("wtype failed: {}", error));
     }
 
-    log::info!("Text pasted successfully using wtype");
+    Ok(())
+}
+
+/// Simulate Ctrl+V using xdotool (XWayland apps)
+fn simulate_paste_xdotool() -> Result<()> {
+    let output = Command::new("xdotool")
+        .args(["key", "ctrl+v"])
+        .output()
+        .context("Failed to execute xdotool")?;
+
+    if !output.status.success() {
+        let error = String::from_utf8_lossy(&output.stderr);
+        return Err(anyhow::anyhow!("xdotool failed: {}", error));
+    }
+
     Ok(())
 }
