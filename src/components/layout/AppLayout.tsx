@@ -6,12 +6,16 @@ import { RecordingTab } from "@/components/tabs/RecordingTab";
 import { SettingsTab } from "@/components/tabs/SettingsTab";
 import { ModelsTab } from "@/components/tabs/ModelsTab";
 import { useSettings } from "@/hooks/useSettings";
+import { useHotkeyListener } from "@/hooks/useHotkeyListener";
 
 export function AppLayout() {
   const [activeTab, setActiveTab] = useState<TabId>("history");
 
   // Load settings and register hotkey on app startup
   useSettings();
+
+  // Listen for hotkey events globally (so it works even before visiting Recording tab)
+  useHotkeyListener();
 
   const renderTabContent = () => {
     switch (activeTab) {
