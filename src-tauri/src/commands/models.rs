@@ -68,6 +68,14 @@ pub async fn get_available_models() -> Result<Vec<WhisperModel>, String> {
     Ok(models)
 }
 
+/// Download progress payload
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DownloadProgressPayload {
+    model_id: String,
+    percentage: f64,
+}
+
 /// Downloads a Whisper model from HuggingFace
 ///
 /// # Arguments
@@ -82,10 +90,20 @@ pub async fn download_model(model_id: String, window: Window) -> Result<(), Stri
     log::info!("Downloading model: {}", model_id);
 
     let downloader = crate::models::downloader::ModelDownloader::new();
+    let model_id_clone = model_id.clone();
+    let mut last_reported: i32 = -1;
 
-    // Download with progress callback
+    // Download with progress callback (throttled to only emit on whole percentage changes)
     downloader.download(&model_id, |progress| {
-        let _ = window.emit("model-download-progress", progress);
+        let percentage = (progress * 100.0) as i32;
+        if percentage > last_reported {
+            last_reported = percentage;
+            let payload = DownloadProgressPayload {
+                model_id: model_id_clone.clone(),
+                percentage: percentage as f64,
+            };
+            let _ = window.emit("download-progress", payload);
+        }
     }).await.map_err(|e| e.to_string())?;
 
     log::info!("Model downloaded successfully: {}", model_id);
