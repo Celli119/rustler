@@ -22,3 +22,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Rust/Tauri
+src-tauri/target/
+
+# Temp files
+*.tmp
+*.bak
+
+# Test coverage
+coverage/
+
+# Whisper models (large files)
+*.bin

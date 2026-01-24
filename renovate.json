@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "automerge": true,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["digest"],
+      "automerge": true
+    },
+    {
+      "matchManagers": ["cargo"],
+      "groupName": "rust dependencies"
+    },
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm dependencies"
+    }
+  ]
+}

@@ -1,9 +1,11 @@
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { useRecording } from "@/hooks/useRecording";
+
 export function App() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="font-medium">Hello World</div>
-    </div>
-  )
+  // Initialize recording hook to set up event listeners
+  useRecording();
+
+  return <SettingsPanel />;
 }
 
-export default App
+export default App;
