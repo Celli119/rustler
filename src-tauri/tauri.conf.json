@@ -48,6 +48,24 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "depends": [
+          "wl-clipboard",
+          "wtype",
+          "xclip",
+          "xdotool"
+        ]
+      },
+      "rpm": {
+        "depends": [
+          "wl-clipboard",
+          "wtype",
+          "xclip",
+          "xdotool"
+        ]
+      }
+    }
   }
 }

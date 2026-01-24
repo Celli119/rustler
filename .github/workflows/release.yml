@@ -69,7 +69,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libfuse2 libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libfuse2 libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev wl-clipboard wtype xclip xdotool
 
       - name: Build application
         run: bun run tauri build
