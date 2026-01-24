@@ -5,9 +5,13 @@ import { HistoryTab } from "@/components/tabs/HistoryTab";
 import { RecordingTab } from "@/components/tabs/RecordingTab";
 import { SettingsTab } from "@/components/tabs/SettingsTab";
 import { ModelsTab } from "@/components/tabs/ModelsTab";
+import { useSettings } from "@/hooks/useSettings";
 
 export function AppLayout() {
   const [activeTab, setActiveTab] = useState<TabId>("history");
+
+  // Load settings and register hotkey on app startup
+  useSettings();
 
   const renderTabContent = () => {
     switch (activeTab) {
