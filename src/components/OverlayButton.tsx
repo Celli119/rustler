@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
+import { invoke } from "@tauri-apps/api/core";
 import { useRecordingState } from "@/hooks/useRecordingState";
 
 // Set transparent background for overlay window
 if (typeof document !== "undefined") {
   document.body.style.background = "transparent";
   document.documentElement.style.background = "transparent";
+}
+
+// Enable click-through by default so transparent areas don't block clicks
+async function setClickThrough(ignore: boolean) {
+  try {
+    await invoke("set_overlay_ignore_cursor_events", { ignore });
+  } catch (e) {
+    console.error("Failed to set click-through:", e);
+  }
 }
 
 
@@ -108,6 +118,23 @@ export function OverlayButton() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  // Enable click-through on mount so transparent areas pass clicks to other apps
+  useEffect(() => {
+    setClickThrough(true);
+  }, []);
+
+  // When mouse enters button, disable click-through so button is interactive
+  const handleMouseEnter = () => {
+    setClickThrough(false);
+  };
+
+  // When mouse leaves button, re-enable click-through
+  const handleMouseLeave = () => {
+    if (!isDragging) {
+      setClickThrough(true);
+    }
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({ x: e.screenX, y: e.screenY });
@@ -127,6 +154,8 @@ export function OverlayButton() {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    // Re-enable click-through after drag ends
+    setClickThrough(true);
   };
 
   const handleClick = async () => {
@@ -134,6 +163,7 @@ export function OverlayButton() {
       await toggleRecording();
     }
   };
+
 
   const isRecording = state === "recording";
   const isProcessing = state === "processing";
@@ -145,7 +175,7 @@ export function OverlayButton() {
 
   return (
     <div
-      className="flex items-center justify-center"
+      className="flex items-center justify-center pointer-events-none"
       style={{ background: "transparent", width: "100vw", height: "100vh", margin: 0, padding: 0 }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -154,6 +184,8 @@ export function OverlayButton() {
       <button
         onClick={handleClick}
         onMouseDown={handleMouseDown}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         disabled={isProcessing}
         className={`
           relative
@@ -165,6 +197,7 @@ export function OverlayButton() {
           disabled:cursor-not-allowed
           hover:scale-110
           active:scale-95
+          pointer-events-auto
           ${isRecording ? "ring-2 ring-orange-400" : ""}
         `}
         style={{
