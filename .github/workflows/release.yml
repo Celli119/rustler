@@ -39,6 +39,7 @@ jobs:
     needs: release
     if: needs.release.outputs.new_release_published == 'true'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -64,6 +65,22 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+
+      - name: Install CUDA toolkit (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: Jimver/cuda-toolkit@v0.2.19
+        with:
+          cuda: "12.6.3"
+          method: network
+          sub-packages: '["nvcc"]'
+
+      - name: Install CUDA toolkit (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: Jimver/cuda-toolkit@v0.2.19
+        with:
+          cuda: "12.6.3"
+          method: network
+          sub-packages: '["nvcc"]'
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
