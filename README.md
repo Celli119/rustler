@@ -1,6 +1,7 @@
 # Rustler
 
-[![Build](https://github.com/Celli119/rustler/actions/workflows/build.yml/badge.svg)](https://github.com/Celli119/rustler/actions/workflows/build.yml)
+[![CI](https://github.com/Celli119/rustler/actions/workflows/ci.yml/badge.svg)](https://github.com/Celli119/rustler/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Celli119/rustler/graph/badge.svg)](https://codecov.io/gh/Celli119/rustler)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Tauri](https://img.shields.io/badge/Tauri-2.0-orange.svg)](https://tauri.app)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)](#installation)

@@ -37,6 +37,12 @@ export const mockInvoke = vi.fn().mockImplementation((command: string, _args?: u
       return Promise.resolve("Test transcription");
     case "paste_text":
       return Promise.resolve();
+    case "is_wayland_session":
+      return Promise.resolve(false);
+    case "transcribe_audio":
+      return Promise.resolve("Test transcription");
+    case "reset_wayland_hotkey":
+      return Promise.resolve();
     default:
       return Promise.reject(new Error(`Unknown command: ${command}`));
   }
