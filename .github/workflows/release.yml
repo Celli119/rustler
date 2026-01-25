@@ -9,6 +9,9 @@ permissions:
   issues: write
   pull-requests: write
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -44,12 +47,16 @@ jobs:
         include:
           - os: macos-latest
             target: aarch64-apple-darwin
+            features: metal
           - os: macos-15
             target: x86_64-apple-darwin
+            features: metal
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            features: cuda
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            features: cuda
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -66,21 +73,13 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install CUDA toolkit (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install CUDA toolkit
+        if: matrix.features == 'cuda'
         uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
           method: network
-          sub-packages: '["nvcc"]'
-
-      - name: Install CUDA toolkit (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: Jimver/cuda-toolkit@v0.2.22
-        with:
-          cuda: "12.6.3"
-          method: network
-          sub-packages: '["nvcc"]'
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev"]'
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -88,8 +87,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libfuse2 libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev wl-clipboard wtype xclip xdotool
 
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
       - name: Build application
-        run: bun run tauri build
+        run: bun run tauri build -- --features ${{ matrix.features }}
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2

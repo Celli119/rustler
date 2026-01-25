@@ -8,6 +8,11 @@ repository = "https://github.com/rustler/rustler-app"
 edition = "2021"
 rust-version = "1.77.2"
 
+[features]
+default = []
+cuda = ["whisper-rs/cuda"]
+metal = ["whisper-rs/metal"]
+
 [lib]
 name = "rustler_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -21,7 +26,7 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-log = "2"
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 tauri-plugin-process = "2"
-whisper-rs = { version = "0.15", features = ["cuda"] }
+whisper-rs = "0.15"
 cpal = "0.15"
 hound = "3.5"
 serde = { version = "1", features = ["derive"] }
