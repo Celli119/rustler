@@ -103,13 +103,16 @@ export function useRecordingState() {
       const text = await transcribeAudio(audioPath, settings.model);
       console.log("Transcription result:", text);
 
-      // Save to history
-      if (text && text.trim()) {
+      // Skip blank audio results from Whisper
+      const isBlankAudio = !text || !text.trim() || text.includes("[BLANK_AUDIO]");
+
+      // Save to history (skip blank audio)
+      if (!isBlankAudio) {
         await addToHistory(text, undefined, settings.model);
       }
 
-      // Auto-paste the transcribed text
-      if (text && text.trim()) {
+      // Auto-paste the transcribed text (skip blank audio)
+      if (!isBlankAudio) {
         try {
           await pasteText(text);
         } catch (error) {

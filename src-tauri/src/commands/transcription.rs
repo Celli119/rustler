@@ -5,6 +5,47 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, State};
 use whisper_rs::{FullParams, SamplingStrategy};
 
+/// Minimum RMS threshold for audio to be considered non-silent.
+/// Audio below this threshold will be skipped without transcription.
+/// 0.001 is a conservative threshold that catches near-silence while allowing quiet speech.
+const SILENCE_RMS_THRESHOLD: f32 = 0.001;
+
+/// Minimum duration in samples for audio to be worth transcribing.
+/// At 16kHz, this is 0.25 seconds (4000 samples).
+const MIN_AUDIO_SAMPLES: usize = 4000;
+
+/// Calculates the Root Mean Square (RMS) of audio samples.
+/// RMS is a good measure of the overall energy/loudness of the audio signal.
+fn calculate_rms(samples: &[f32]) -> f32 {
+    if samples.is_empty() {
+        return 0.0;
+    }
+    let sum_of_squares: f32 = samples.iter().map(|&s| s * s).sum();
+    (sum_of_squares / samples.len() as f32).sqrt()
+}
+
+/// Checks if audio samples are effectively silent or too short to transcribe.
+/// Returns true if the audio should be skipped.
+fn is_audio_silent_or_too_short(samples: &[f32]) -> bool {
+    // Check if audio is too short
+    if samples.len() < MIN_AUDIO_SAMPLES {
+        log::info!("Audio too short ({} samples, minimum {}), skipping transcription",
+            samples.len(), MIN_AUDIO_SAMPLES);
+        return true;
+    }
+
+    // Check RMS level
+    let rms = calculate_rms(samples);
+    if rms < SILENCE_RMS_THRESHOLD {
+        log::info!("Audio is silent (RMS: {:.6}, threshold: {}), skipping transcription",
+            rms, SILENCE_RMS_THRESHOLD);
+        return true;
+    }
+
+    log::debug!("Audio RMS: {:.6}, proceeding with transcription", rms);
+    false
+}
+
 /// Transcribes audio file to text using the specified Whisper model
 ///
 /// # Arguments
@@ -91,6 +132,11 @@ fn transcribe_blocking(
         .map(|s| s.unwrap() as f32 / i16::MAX as f32)
         .collect();
 
+    // Check if audio is silent or too short - skip expensive transcription
+    if is_audio_silent_or_too_short(&audio_data) {
+        return Ok(String::new());
+    }
+
     // Get or load model from cache (stays loaded for 5 minutes after last use)
     // Pass the use_gpu setting - if it changes, the model will be reloaded
     let cache = get_model_cache();
@@ -134,4 +180,150 @@ fn transcribe_blocking(
     }).map_err(|e: anyhow::Error| format!("Failed to transcribe audio: {}", e))?;
 
     Ok(text)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests for RMS calculation
+    mod rms_tests {
+        use super::*;
+
+        #[test]
+        fn test_calculate_rms_empty() {
+            let samples: Vec<f32> = vec![];
+            assert_eq!(calculate_rms(&samples), 0.0);
+        }
+
+        #[test]
+        fn test_calculate_rms_silence() {
+            let samples: Vec<f32> = vec![0.0; 1000];
+            assert_eq!(calculate_rms(&samples), 0.0);
+        }
+
+        #[test]
+        fn test_calculate_rms_constant_signal() {
+            // RMS of constant signal equals the absolute value
+            let samples: Vec<f32> = vec![0.5; 1000];
+            let rms = calculate_rms(&samples);
+            assert!((rms - 0.5).abs() < 0.0001);
+        }
+
+        #[test]
+        fn test_calculate_rms_sine_wave() {
+            // RMS of sine wave is amplitude / sqrt(2)
+            let sample_rate = 16000.0;
+            let frequency = 440.0;
+            let amplitude = 0.5;
+            let duration_secs = 1.0;
+            let num_samples = (sample_rate * duration_secs) as usize;
+
+            let samples: Vec<f32> = (0..num_samples)
+                .map(|i| {
+                    let t = i as f32 / sample_rate;
+                    amplitude * (2.0 * std::f32::consts::PI * frequency * t).sin()
+                })
+                .collect();
+
+            let rms = calculate_rms(&samples);
+            let expected_rms = amplitude / std::f32::consts::SQRT_2;
+            assert!((rms - expected_rms).abs() < 0.01);
+        }
+
+        #[test]
+        fn test_calculate_rms_loud_signal() {
+            // Full amplitude signal should have high RMS
+            let samples: Vec<f32> = vec![1.0, -1.0, 1.0, -1.0];
+            let rms = calculate_rms(&samples);
+            assert!((rms - 1.0).abs() < 0.0001);
+        }
+    }
+
+    /// Tests for silence detection
+    mod silence_detection_tests {
+        use super::*;
+
+        #[test]
+        fn test_empty_audio_is_silent() {
+            let samples: Vec<f32> = vec![];
+            assert!(is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_short_audio_is_silent() {
+            // Less than MIN_AUDIO_SAMPLES
+            let samples: Vec<f32> = vec![0.5; MIN_AUDIO_SAMPLES - 1];
+            assert!(is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_silent_audio_detected() {
+            // Enough samples but all zeros
+            let samples: Vec<f32> = vec![0.0; MIN_AUDIO_SAMPLES + 1000];
+            assert!(is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_very_quiet_audio_detected() {
+            // Samples below threshold
+            let samples: Vec<f32> = vec![0.0001; MIN_AUDIO_SAMPLES + 1000];
+            assert!(is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_normal_audio_not_silent() {
+            // Normal speech-like amplitude
+            let samples: Vec<f32> = vec![0.1; MIN_AUDIO_SAMPLES + 1000];
+            assert!(!is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_loud_audio_not_silent() {
+            // Loud signal
+            let samples: Vec<f32> = vec![0.5; MIN_AUDIO_SAMPLES + 1000];
+            assert!(!is_audio_silent_or_too_short(&samples));
+        }
+
+        #[test]
+        fn test_threshold_boundary() {
+            // Just below threshold
+            let below_threshold: Vec<f32> = vec![SILENCE_RMS_THRESHOLD * 0.5; MIN_AUDIO_SAMPLES + 100];
+            assert!(is_audio_silent_or_too_short(&below_threshold));
+
+            // Just above threshold
+            let above_threshold: Vec<f32> = vec![SILENCE_RMS_THRESHOLD * 2.0; MIN_AUDIO_SAMPLES + 100];
+            assert!(!is_audio_silent_or_too_short(&above_threshold));
+        }
+
+        #[test]
+        fn test_exact_minimum_samples() {
+            // Exactly MIN_AUDIO_SAMPLES passes the length check (we use < not <=)
+            let samples: Vec<f32> = vec![0.5; MIN_AUDIO_SAMPLES];
+            assert!(!is_audio_silent_or_too_short(&samples));
+
+            // One less than minimum should fail length check
+            let samples_minus_one: Vec<f32> = vec![0.5; MIN_AUDIO_SAMPLES - 1];
+            assert!(is_audio_silent_or_too_short(&samples_minus_one));
+        }
+
+        #[test]
+        fn test_realistic_sine_wave() {
+            // Generate a realistic audio signal (440Hz tone)
+            let sample_rate = 16000.0;
+            let frequency = 440.0;
+            let amplitude = 0.3; // Moderate amplitude
+            let duration_secs = 0.5;
+            let num_samples = (sample_rate * duration_secs) as usize;
+
+            let samples: Vec<f32> = (0..num_samples)
+                .map(|i| {
+                    let t = i as f32 / sample_rate;
+                    amplitude * (2.0 * std::f32::consts::PI * frequency * t).sin()
+                })
+                .collect();
+
+            assert!(!is_audio_silent_or_too_short(&samples));
+        }
+    }
 }
