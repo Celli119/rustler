@@ -1,1 +1,14 @@
+#!/bin/sh
+
+# Frontend checks
 bun run lint
+bun run format:check
+bun run typecheck
+
+# Rust checks (only if Rust files changed)
+if git diff --cached --name-only | grep -q '\.rs$'; then
+  cd src-tauri
+  cargo fmt --check
+  cargo clippy --all-targets --all-features -- -D warnings
+  cd ..
+fi
