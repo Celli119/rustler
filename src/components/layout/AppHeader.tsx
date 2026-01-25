@@ -1,10 +1,26 @@
-import { Mic, Minus, Square, X } from "lucide-react";
+import { Mic, Minus, Square, X, Copy } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export function AppHeader() {
   const appWindow = getCurrentWindow();
+  const [isMaximized, setIsMaximized] = useState(false);
+
+  useEffect(() => {
+    // Check initial state
+    appWindow.isMaximized().then(setIsMaximized);
+
+    // Listen for resize events to update state
+    const unlisten = appWindow.onResized(() => {
+      appWindow.isMaximized().then(setIsMaximized);
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, [appWindow]);
 
   const handleMinimize = () => appWindow.minimize();
   const handleMaximize = () => appWindow.toggleMaximize();
@@ -62,7 +78,7 @@ export function AppHeader() {
             className="rounded-none h-14 w-12 hover:bg-muted"
             onClick={handleMaximize}
           >
-            <Square className="size-3" />
+            {isMaximized ? <Copy className="size-3" /> : <Square className="size-3" />}
           </Button>
           <Button
             variant="ghost"
