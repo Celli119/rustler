@@ -174,21 +174,25 @@ jobs:
 
       - name: Build application
         run: |
-          if [ -n "${{ matrix.features }}" ]; then
-            bun run tauri build -- --features ${{ matrix.features }}
+          # Skip AppImage on Linux due to linuxdeploy/strip incompatibility with modern ELF
+          # See: https://github.com/tauri-apps/tauri/issues/14796
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            TARGETS="deb,rpm"
           else
-            bun run tauri build
+            TARGETS="all"
+          fi
+
+          if [ -n "${{ matrix.features }}" ]; then
+            bun run tauri build --bundles $TARGETS -- --features ${{ matrix.features }}
+          else
+            bun run tauri build --bundles $TARGETS
           fi
         shell: bash
         env:
           # Workaround for whisper.cpp i8mm issue on macOS ARM64 GitHub runners
+          # Disable Accelerate framework to avoid ARM NEON/i8mm auto-detection issues
           # See: https://github.com/ggml-org/whisper.cpp/issues/3427
-          CFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a -mmacosx-version-min=10.15' || '' }}
-          CXXFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a -mmacosx-version-min=10.15' || '' }}
-          CMAKE_ARGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-DGGML_NATIVE=OFF' || '' }}
-          # Fix linuxdeploy issues on Ubuntu runners
-          NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
-          APPIMAGE_EXTRACT_AND_RUN: ${{ matrix.os == 'ubuntu-latest' && '1' || '' }}
+          CMAKE_ARGS: ${{ (matrix.os == 'macos-latest' || matrix.os == 'macos-15') && '-DGGML_NO_ACCELERATE=ON -DGGML_NATIVE=OFF' || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
