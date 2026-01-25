@@ -126,12 +126,11 @@ pub async fn transcribe_audio(
             );
             format!("Channel receive error: {}", e)
         })?
-        .map_err(|e| {
+        .inspect_err(|_e| {
             let _ = app.emit(
                 "processing-status",
                 serde_json::json!({ "isProcessing": false }),
             );
-            e
         })?;
 
     log::info!("Transcription completed: {} characters", text.len());

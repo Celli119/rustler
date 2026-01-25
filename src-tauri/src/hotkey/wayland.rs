@@ -248,7 +248,7 @@ impl WaylandHotkeyManager {
 
         let result = has_wayland_display
             || is_wayland_session
-            || (is_wayland_desktop && !std::env::var("DISPLAY").is_ok());
+            || (is_wayland_desktop && std::env::var("DISPLAY").is_err());
 
         log::info!(
             "Wayland detection: WAYLAND_DISPLAY={}, XDG_SESSION_TYPE=wayland: {}, wayland_desktop: {} -> {}",

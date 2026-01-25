@@ -136,9 +136,9 @@ mod tests {
     use super::*;
     use std::time::Duration;
 
-    /// Tests for audio recording functionality
-    /// Note: Some tests may be skipped if no audio input device is available,
-    /// as is common in CI environments.
+    // Tests for audio recording functionality
+    // Note: Some tests may be skipped if no audio input device is available,
+    // as is common in CI environments.
 
     /// Helper function to check if an audio input device is available
     fn has_audio_input_device() -> bool {
@@ -162,7 +162,6 @@ mod tests {
             let result = AudioRecorder::start_recording();
             // Without a device, this should fail
             assert!(result.is_err() || result.is_ok());
-            return;
         }
     }
 

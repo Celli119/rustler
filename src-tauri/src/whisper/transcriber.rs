@@ -251,7 +251,7 @@ mod tests {
 
         #[test]
         fn test_concatenate_segments() {
-            let segments = vec!["Hello", "World", "Test"];
+            let segments = ["Hello", "World", "Test"];
             let mut result = String::new();
 
             for (i, segment) in segments.iter().enumerate() {
