@@ -84,14 +84,6 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install CUDA toolkit
-        uses: Jimver/cuda-toolkit@v0.2.22
-        with:
-          cuda: "12.6.3"
-          method: network
-          sub-packages: '["nvcc", "cudart", "thrust"]'
-          non-cuda-sub-packages: '["libcublas", "libcublas-dev"]'
-
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
@@ -108,7 +100,7 @@ jobs:
 
       - name: Run Rust tests with coverage
         working-directory: src-tauri
-        run: cargo llvm-cov --features cuda --lcov --output-path ../coverage/rust-lcov.info
+        run: cargo llvm-cov --lcov --output-path ../coverage/rust-lcov.info
 
       - name: Upload Rust coverage to Codecov
         uses: codecov/codecov-action@v4
