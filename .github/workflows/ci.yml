@@ -38,7 +38,8 @@ jobs:
         with:
           cuda: "12.6.3"
           method: network
-          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: '["libcublas", "libcublas-dev"]'
 
       - name: Install Linux dependencies
         run: |
@@ -87,7 +88,8 @@ jobs:
         with:
           cuda: "12.6.3"
           method: network
-          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: '["libcublas", "libcublas-dev"]'
 
       - name: Install Linux dependencies
         run: |
@@ -153,7 +155,8 @@ jobs:
         with:
           cuda: "12.6.3"
           method: network
-          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
+          sub-packages: '["nvcc", "cudart", "thrust"]'
+          non-cuda-sub-packages: '["libcublas", "libcublas-dev"]'
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
