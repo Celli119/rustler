@@ -13,6 +13,9 @@ pub struct Settings {
     pub use_gpu: bool,
     /// Language code for transcription (e.g., "en", "es")
     pub language: String,
+    /// Whether to show the overlay button only during recording
+    #[serde(default)]
+    pub show_overlay_only_during_recording: bool,
 }
 
 impl Default for Settings {
@@ -22,6 +25,7 @@ impl Default for Settings {
             model: "base".to_string(),
             use_gpu: false,
             language: "en".to_string(),
+            show_overlay_only_during_recording: false,
         }
     }
 }

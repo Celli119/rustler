@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { useRecordingState } from "@/hooks/useRecordingState";
+import { getSettings } from "@/lib/tauri";
 
 // Set transparent background for overlay window
 if (typeof document !== "undefined") {
@@ -117,10 +118,14 @@ export function OverlayButton() {
   const { state, toggleRecording } = useRecordingState();
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showOnlyDuringRecording, setShowOnlyDuringRecording] = useState(false);
 
-  // Enable click-through on mount so transparent areas pass clicks to other apps
+  // Load setting on mount (requires app restart to take effect)
   useEffect(() => {
     setClickThrough(true);
+    getSettings().then((settings) => {
+      setShowOnlyDuringRecording(settings.showOverlayOnlyDuringRecording);
+    });
   }, []);
 
   // When mouse enters button, disable click-through so button is interactive
@@ -168,6 +173,9 @@ export function OverlayButton() {
   const isRecording = state === "recording";
   const isProcessing = state === "processing";
 
+  // Hide button when not recording/processing if setting is enabled
+  const shouldHide = showOnlyDuringRecording && state === "idle";
+
   // Shadow color based on state
   const shadowColor = isRecording
     ? "rgba(205, 127, 50, 0.7)"
@@ -181,32 +189,34 @@ export function OverlayButton() {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <button
-        onClick={handleClick}
-        onMouseDown={handleMouseDown}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        disabled={isProcessing}
-        className={`
-          relative
-          w-[70px] h-[70px]
-          rounded-full
-          overflow-hidden
-          transition-all duration-300
-          cursor-pointer
-          disabled:cursor-not-allowed
-          hover:scale-110
-          active:scale-95
-          pointer-events-auto
-          ${isRecording ? "ring-2 ring-orange-400" : ""}
-        `}
-        style={{
-          boxShadow: `0 4px 20px ${shadowColor}, 0 0 0 0.5px rgba(201, 147, 90, 0.5)`,
-          background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)",
-        }}
-      >
-        <DuneIcon isAnimating={isRecording} />
-      </button>
+      {!shouldHide && (
+        <button
+          onClick={handleClick}
+          onMouseDown={handleMouseDown}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          disabled={isProcessing}
+          className={`
+            relative
+            w-[70px] h-[70px]
+            rounded-full
+            overflow-hidden
+            transition-all duration-300
+            cursor-pointer
+            disabled:cursor-not-allowed
+            hover:scale-110
+            active:scale-95
+            pointer-events-auto
+            ${isRecording ? "ring-2 ring-orange-400" : ""}
+          `}
+          style={{
+            boxShadow: `0 4px 20px ${shadowColor}, 0 0 0 0.5px rgba(201, 147, 90, 0.5)`,
+            background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)",
+          }}
+        >
+          <DuneIcon isAnimating={isRecording} />
+        </button>
+      )}
     </div>
   );
 }

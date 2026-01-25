@@ -35,6 +35,7 @@ export const useAppStore = create<AppState>((set) => ({
     model: "base",
     useGpu: false,
     language: "en",
+    showOverlayOnlyDuringRecording: false,
   },
 
   models: [],

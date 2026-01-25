@@ -7,6 +7,7 @@ export interface Settings {
   model: string;
   useGpu: boolean;
   language: string;
+  showOverlayOnlyDuringRecording: boolean;
 }
 
 export interface WhisperModel {
@@ -156,3 +157,15 @@ export async function deleteHistoryEntry(id: string): Promise<void> {
 export async function clearHistory(): Promise<void> {
   return invoke("clear_history");
 }
+
+// Overlay commands
+export async function showOverlay(): Promise<void> {
+  return invoke("show_overlay");
+}
+
+export async function hideOverlay(): Promise<void> {
+  return invoke("hide_overlay");
+}
+
+// App lifecycle commands (via @tauri-apps/plugin-process)
+export { relaunch as restartApp } from "@tauri-apps/plugin-process";

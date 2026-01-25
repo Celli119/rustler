@@ -2,6 +2,36 @@
 
 use tauri::{AppHandle, Manager};
 
+/// Shows the overlay window
+#[tauri::command]
+pub async fn show_overlay(app: AppHandle) -> Result<(), String> {
+    log::info!("Showing overlay window");
+
+    if let Some(window) = app.get_webview_window("overlay") {
+        window
+            .show()
+            .map_err(|e| format!("Failed to show overlay: {}", e))?;
+        Ok(())
+    } else {
+        Err("Overlay window not found".to_string())
+    }
+}
+
+/// Hides the overlay window
+#[tauri::command]
+pub async fn hide_overlay(app: AppHandle) -> Result<(), String> {
+    log::info!("Hiding overlay window");
+
+    if let Some(window) = app.get_webview_window("overlay") {
+        window
+            .hide()
+            .map_err(|e| format!("Failed to hide overlay: {}", e))?;
+        Ok(())
+    } else {
+        Err("Overlay window not found".to_string())
+    }
+}
+
 /// Sets whether the overlay window should ignore cursor events (click-through)
 ///
 /// When `ignore` is true, mouse clicks pass through the window.

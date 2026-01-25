@@ -48,6 +48,9 @@ pub fn run() {
             // Setup positioner plugin for window positioning
             app.handle().plugin(tauri_plugin_positioner::init())?;
 
+            // Setup process plugin for restart functionality
+            app.handle().plugin(tauri_plugin_process::init())?;
+
             // Initialize app state
             app.manage(Arc::new(AppState::default()));
 
@@ -108,9 +111,9 @@ pub fn run() {
                     }
                 }
 
-                // Force show the overlay window
+                // Show the overlay window (content visibility is controlled by the frontend)
                 let _ = overlay.show();
-                let _ = overlay.set_focus();
+                log::info!("Overlay window shown on startup");
             }
 
             Ok(())
@@ -149,6 +152,8 @@ pub fn run() {
             commands::overlay::set_overlay_ignore_cursor_events,
             commands::overlay::move_overlay_window,
             commands::overlay::get_overlay_position,
+            commands::overlay::show_overlay,
+            commands::overlay::hide_overlay,
             // History commands
             commands::history::get_history,
             commands::history::add_history,

@@ -29,6 +29,8 @@
     "global-shortcut:allow-is-registered",
     "core:path:default",
     "core:path:allow-resolve-directory",
-    "log:default"
+    "log:default",
+    "process:allow-restart",
+    "process:allow-exit"
   ]
 }

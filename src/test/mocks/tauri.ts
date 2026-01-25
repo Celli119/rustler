@@ -6,6 +6,7 @@ export const mockSettings: Settings = {
   model: "base",
   useGpu: false,
   language: "en",
+  showOverlayOnlyDuringRecording: false,
 };
 
 export const mockModels: WhisperModel[] = [
