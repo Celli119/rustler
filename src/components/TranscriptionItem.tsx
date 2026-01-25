@@ -32,41 +32,40 @@ export function TranscriptionItem({
   };
 
   return (
-    <div className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <span className="text-xs text-muted-foreground font-mono mt-1">
-        #{index + 1}
-      </span>
+    <div className="group flex items-start gap-3 py-2 border-b border-border/30 last:border-b-0 hover:bg-muted/30 transition-colors px-1">
+        <span className="text-xs text-muted-foreground font-mono mt-0.5">
+          #{index + 1}
+        </span>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-foreground line-clamp-2">{record.text}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-muted-foreground">
-            {formatTimestamp(record.timestamp)}
-          </span>
-          {record.model && (
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-foreground line-clamp-2">{record.text}</p>
+          <div className="flex items-center gap-2 mt-1.5">
             <span className="text-xs text-muted-foreground">
-              · {record.model}
+              {formatTimestamp(record.timestamp)}
             </span>
-          )}
+            {record.model && (
+              <span className="text-xs text-muted-foreground">
+                · {record.model}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
-          size="icon"
-          className="h-8 w-8"
+          size="icon-xs"
           onClick={() => onCopy(record.text)}
         >
-          <Copy className="h-4 w-4" />
+          <Copy className="size-3" />
         </Button>
         <Button
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
+          size="icon-xs"
+          className="text-destructive hover:text-destructive"
           onClick={() => onDelete(record.id)}
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="size-3" />
         </Button>
       </div>
     </div>

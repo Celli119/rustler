@@ -7,6 +7,7 @@ import { SettingsTab } from "@/components/tabs/SettingsTab";
 import { ModelsTab } from "@/components/tabs/ModelsTab";
 import { useSettings } from "@/hooks/useSettings";
 import { useHotkeyListener } from "@/hooks/useHotkeyListener";
+import { WavyBackground } from "@/components/WavyBackground";
 
 export function AppLayout() {
   const [activeTab, setActiveTab] = useState<TabId>("history");
@@ -33,12 +34,15 @@ export function AppLayout() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <AppHeader />
-      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="flex-1 overflow-auto p-6">
-        {renderTabContent()}
-      </main>
+    <div className="flex flex-col h-screen bg-background relative">
+      <WavyBackground />
+      <div className="relative z-10 flex flex-col h-full">
+        <AppHeader />
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <main className="flex-1 overflow-auto p-6">
+          {renderTabContent()}
+        </main>
+      </div>
     </div>
   );
 }

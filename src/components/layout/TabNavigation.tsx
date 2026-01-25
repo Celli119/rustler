@@ -18,7 +18,7 @@ const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
-    <nav className="flex items-center gap-1 px-6 py-2 border-b border-border bg-muted/30">
+    <nav className="flex items-center gap-1 px-6 py-2 border-b border-border/50 bg-muted/20 backdrop-blur-sm">
       {tabs.map((tab) => (
         <Button
           key={tab.id}

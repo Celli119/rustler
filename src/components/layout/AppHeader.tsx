@@ -41,7 +41,7 @@ export function AppHeader() {
   };
 
   return (
-    <header className="flex items-center justify-between border-b border-border select-none">
+    <header className="flex items-center justify-between border-b border-border/50 select-none bg-background/70 backdrop-blur-md">
       {/* Draggable region with app branding */}
       <div
         className="flex items-center gap-3 flex-1 px-6 py-4 cursor-default"
