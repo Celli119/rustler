@@ -60,9 +60,21 @@ pub fn run() {
             // Setup system tray icon
             #[cfg(desktop)]
             {
+                use tauri::image::Image;
+                use tauri::menu::MenuBuilder;
                 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 
+                // Load the tray icon from embedded PNG bytes
+                // On Linux, the icon may not show without a menu, so we create an empty one
+                let tray_icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))
+                    .expect("Failed to load tray icon");
+
+                // Create an empty menu (required on Linux for the icon to be visible)
+                let menu = MenuBuilder::new(app).build()?;
+
                 let _tray = TrayIconBuilder::new()
+                    .icon(tray_icon)
+                    .menu(&menu)
                     .tooltip("Rustler")
                     .on_tray_icon_event(|tray, event| {
                         if let TrayIconEvent::Click { .. } = event {

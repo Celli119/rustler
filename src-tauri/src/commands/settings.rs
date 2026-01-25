@@ -1,5 +1,10 @@
+use once_cell::sync::Lazy;
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
+/// Global settings cache - loaded once from disk, kept in memory
+static SETTINGS_CACHE: Lazy<RwLock<Option<Settings>>> = Lazy::new(|| RwLock::new(None));
 
 /// Application settings structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,15 +51,8 @@ fn get_settings_path() -> Result<PathBuf, String> {
     Ok(app_config_dir.join("settings.json"))
 }
 
-/// Retrieves the current application settings
-///
-/// # Returns
-/// * `Ok(Settings)` with the current settings
-/// * `Err(String)` if settings could not be loaded
-#[tauri::command]
-pub async fn get_settings() -> Result<Settings, String> {
-    log::info!("Loading settings");
-
+/// Loads settings from disk (internal helper)
+fn load_settings_from_disk() -> Result<Settings, String> {
     let settings_path = get_settings_path()?;
 
     // If settings file doesn't exist, return defaults
@@ -71,11 +69,41 @@ pub async fn get_settings() -> Result<Settings, String> {
     let settings: Settings = serde_json::from_str(&contents)
         .map_err(|e| format!("Failed to parse settings: {}", e))?;
 
-    log::info!("Settings loaded successfully");
     Ok(settings)
 }
 
-/// Saves application settings to disk
+/// Retrieves the current application settings
+/// Uses in-memory cache to avoid repeated disk reads
+///
+/// # Returns
+/// * `Ok(Settings)` with the current settings
+/// * `Err(String)` if settings could not be loaded
+#[tauri::command]
+pub async fn get_settings() -> Result<Settings, String> {
+    // Fast path: check if settings are cached
+    {
+        let cache = SETTINGS_CACHE.read();
+        if let Some(ref settings) = *cache {
+            log::debug!("Settings retrieved from cache");
+            return Ok(settings.clone());
+        }
+    }
+
+    // Slow path: load from disk and cache
+    log::info!("Loading settings from disk");
+    let settings = load_settings_from_disk()?;
+
+    // Cache the settings
+    {
+        let mut cache = SETTINGS_CACHE.write();
+        *cache = Some(settings.clone());
+    }
+
+    log::info!("Settings loaded and cached");
+    Ok(settings)
+}
+
+/// Saves application settings to disk and updates cache
 ///
 /// # Arguments
 /// * `settings` - Settings object to save
@@ -97,7 +125,13 @@ pub async fn save_settings(settings: Settings) -> Result<(), String> {
     std::fs::write(&settings_path, json)
         .map_err(|e| format!("Failed to write settings file: {}", e))?;
 
-    log::info!("Settings saved successfully");
+    // Update cache
+    {
+        let mut cache = SETTINGS_CACHE.write();
+        *cache = Some(settings);
+    }
+
+    log::info!("Settings saved and cached");
     Ok(())
 }
 
@@ -142,6 +176,7 @@ mod tests {
             model: "large".to_string(),
             use_gpu: true,
             language: "es".to_string(),
+            show_overlay_only_during_recording: true,
         };
 
         let cloned = settings.clone();
@@ -150,6 +185,7 @@ mod tests {
         assert_eq!(cloned.model, settings.model);
         assert_eq!(cloned.use_gpu, settings.use_gpu);
         assert_eq!(cloned.language, settings.language);
+        assert_eq!(cloned.show_overlay_only_during_recording, settings.show_overlay_only_during_recording);
     }
 
     #[test]
@@ -169,6 +205,7 @@ mod tests {
             model: "medium".to_string(),
             use_gpu: true,
             language: "fr".to_string(),
+            show_overlay_only_during_recording: false,
         };
 
         // Serialize to JSON
@@ -191,8 +228,9 @@ mod tests {
         let json = r#"{
             "hotkey": "Alt+S",
             "model": "tiny",
-            "use_gpu": false,
-            "language": "de"
+            "useGpu": false,
+            "language": "de",
+            "showOverlayOnlyDuringRecording": false
         }"#;
 
         let settings: Settings = serde_json::from_str(json).unwrap();
@@ -201,6 +239,7 @@ mod tests {
         assert_eq!(settings.model, "tiny");
         assert!(!settings.use_gpu);
         assert_eq!(settings.language, "de");
+        assert!(!settings.show_overlay_only_during_recording);
     }
 
     #[test]
@@ -256,6 +295,7 @@ mod tests {
             model: "small".to_string(),
             use_gpu: true,
             language: "ja".to_string(),
+            show_overlay_only_during_recording: true,
         };
 
         // Write settings

@@ -1,30 +1,31 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback } from "react";
 import { useAppStore } from "@/stores/appStore";
 import { getSettings, saveSettings, registerHotkey, isWaylandSession, resetWaylandHotkey } from "@/lib/tauri";
 import type { Settings } from "@/lib/tauri";
 
+// Module-level flag to prevent duplicate hotkey registration across all hook instances
+let hotkeyRegistered = false;
+
 export function useSettings() {
   const { settings, setSettings } = useAppStore();
-  // Prevent duplicate hotkey registration (React Strict Mode calls effects twice)
-  const hotkeyRegisteredRef = useRef(false);
 
   // Load settings on mount and auto-register hotkey
   useEffect(() => {
     const loadSettings = async () => {
       try {
+        // Backend caches settings, so this is fast after first call
         const loadedSettings = await getSettings();
         setSettings(loadedSettings);
 
-        // Auto-register hotkey on startup (only once)
-        if (loadedSettings.hotkey && !hotkeyRegisteredRef.current) {
-          hotkeyRegisteredRef.current = true;
+        // Auto-register hotkey on startup (only once globally)
+        if (loadedSettings.hotkey && !hotkeyRegistered) {
+          hotkeyRegistered = true;
           try {
             await registerHotkey(loadedSettings.hotkey);
             console.log("Hotkey auto-registered:", loadedSettings.hotkey);
           } catch (error) {
             console.error("Failed to auto-register hotkey:", error);
-            // Reset flag so user can retry
-            hotkeyRegisteredRef.current = false;
+            hotkeyRegistered = false;
           }
         }
       } catch (error) {
@@ -51,7 +52,7 @@ export function useSettings() {
   const updateHotkey = useCallback(
     async (hotkey: string) => {
       try {
-        hotkeyRegisteredRef.current = true;
+        hotkeyRegistered = true;
 
         // On Wayland, use resetWaylandHotkey to force the dialog to appear
         const isWayland = await isWaylandSession();
@@ -65,7 +66,7 @@ export function useSettings() {
         await updateSettings({ hotkey });
       } catch (error) {
         console.error("Failed to update hotkey:", error);
-        hotkeyRegisteredRef.current = false;
+        hotkeyRegistered = false;
         throw error;
       }
     },

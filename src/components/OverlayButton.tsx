@@ -11,12 +11,11 @@ if (typeof document !== "undefined") {
 }
 
 // Enable click-through by default so transparent areas don't block clicks
-async function setClickThrough(ignore: boolean) {
-  try {
-    await invoke("set_overlay_ignore_cursor_events", { ignore });
-  } catch (e) {
+// Use fire-and-forget pattern to avoid blocking the UI
+function setClickThrough(ignore: boolean) {
+  invoke("set_overlay_ignore_cursor_events", { ignore }).catch((e) => {
     console.error("Failed to set click-through:", e);
-  }
+  });
 }
 
 

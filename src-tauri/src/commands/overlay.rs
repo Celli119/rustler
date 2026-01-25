@@ -38,7 +38,8 @@ pub async fn hide_overlay(app: AppHandle) -> Result<(), String> {
 /// When `ignore` is false, the window receives mouse events normally.
 #[tauri::command]
 pub async fn set_overlay_ignore_cursor_events(app: AppHandle, ignore: bool) -> Result<(), String> {
-    log::info!("Setting overlay ignore_cursor_events: {}", ignore);
+    // Debug level to avoid log spam on mouse enter/leave
+    log::debug!("Setting overlay ignore_cursor_events: {}", ignore);
 
     if let Some(window) = app.get_webview_window("overlay") {
         window
