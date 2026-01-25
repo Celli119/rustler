@@ -1,9 +1,1 @@
-#!/bin/sh
-
-# Run pre-commit commit-msg hooks if installed
-if command -v pre-commit >/dev/null 2>&1; then
-  pre-commit run --hook-stage commit-msg --commit-msg-filename "$1"
-else
-  echo "pre-commit not installed, run: pip install pre-commit && pre-commit install"
-  exit 1
-fi
+bunx --no -- commitlint --edit ${1}
