@@ -86,7 +86,10 @@ export function AppHeader() {
       >
         <div
           className="flex items-center justify-center size-8 rounded-full overflow-hidden pointer-events-none"
-          style={{ background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)" }}
+          style={{
+            background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)",
+            boxShadow: "0 0 0 0.5px rgba(201, 147, 90, 0.5)"
+          }}
           data-tauri-drag-region
         >
           <DuneAppIcon />

@@ -168,7 +168,7 @@ export function OverlayButton() {
           ${isRecording ? "ring-2 ring-orange-400" : ""}
         `}
         style={{
-          boxShadow: `0 4px 20px ${shadowColor}`,
+          boxShadow: `0 4px 20px ${shadowColor}, 0 0 0 0.5px rgba(201, 147, 90, 0.5)`,
           background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)",
         }}
       >
