@@ -50,7 +50,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-          save-if: "true"
+          cache-on-failure: true
 
       - name: Run Clippy
         working-directory: src-tauri
@@ -93,7 +93,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-          save-if: "true"
+          cache-on-failure: true
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -170,7 +170,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-          save-if: "true"
+          cache-on-failure: true
 
       - name: Build application
         run: |
@@ -183,8 +183,8 @@ jobs:
         env:
           # Workaround for whisper.cpp i8mm issue on macOS ARM64 GitHub runners
           # See: https://github.com/ggml-org/whisper.cpp/issues/3427
-          CFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
-          CXXFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
+          CFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a -mmacosx-version-min=10.15' || '' }}
+          CXXFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a -mmacosx-version-min=10.15' || '' }}
           CMAKE_ARGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-DGGML_NATIVE=OFF' || '' }}
           # Fix linuxdeploy issues on Ubuntu runners
           NO_STRIP: ${{ matrix.os == 'ubuntu-latest' && 'true' || '' }}
