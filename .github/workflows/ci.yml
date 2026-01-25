@@ -50,6 +50,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          save-if: "true"
 
       - name: Run Clippy
         working-directory: src-tauri
@@ -100,6 +101,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          save-if: "true"
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -168,6 +170,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          save-if: "true"
 
       - name: Build application
         run: |
@@ -177,6 +180,12 @@ jobs:
             bun run tauri build
           fi
         shell: bash
+        env:
+          # Workaround for whisper.cpp i8mm issue on macOS ARM64 GitHub runners
+          # See: https://github.com/ggml-org/whisper.cpp/issues/3427
+          CFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
+          CXXFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
+          CMAKE_ARGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-DGGML_NATIVE=OFF' || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

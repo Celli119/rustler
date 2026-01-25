@@ -93,6 +93,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          save-if: "true"
 
       - name: Build application
         run: |
@@ -102,6 +103,12 @@ jobs:
             bun run tauri build
           fi
         shell: bash
+        env:
+          # Workaround for whisper.cpp i8mm issue on macOS ARM64 GitHub runners
+          # See: https://github.com/ggml-org/whisper.cpp/issues/3427
+          CFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
+          CXXFLAGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-march=armv8.5-a' || '' }}
+          CMAKE_ARGS: ${{ matrix.target == 'aarch64-apple-darwin' && '-DGGML_NATIVE=OFF' || '' }}
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
