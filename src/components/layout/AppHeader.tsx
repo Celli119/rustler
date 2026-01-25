@@ -1,8 +1,44 @@
-import { Mic, Minus, Square, X, Copy } from "lucide-react";
+import { Minus, Square, X, Copy } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+
+/**
+ * Small dune icon for the app header - fills the full circle
+ */
+function DuneAppIcon() {
+  return (
+    <svg viewBox="0 0 90 90" fill="none" className="size-full">
+      <defs>
+        <linearGradient id="headerDuneGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#cd7f32" />
+          <stop offset="100%" stopColor="#b45328" />
+        </linearGradient>
+        <linearGradient id="headerDuneGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#b45328" />
+          <stop offset="100%" stopColor="#8b4513" />
+        </linearGradient>
+        <linearGradient id="headerDuneGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b4513" />
+          <stop offset="100%" stopColor="#6b3410" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M 0 50 Q 15 35, 30 42 Q 50 52, 70 38 Q 85 28, 90 35 L 90 90 L 0 90 Z"
+        fill="url(#headerDuneGradient1)"
+      />
+      <path
+        d="M 0 60 Q 20 50, 40 55 Q 60 62, 80 52 Q 88 48, 90 52 L 90 90 L 0 90 Z"
+        fill="url(#headerDuneGradient2)"
+      />
+      <path
+        d="M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z"
+        fill="url(#headerDuneGradient3)"
+      />
+    </svg>
+  );
+}
 
 export function AppHeader() {
   const appWindow = getCurrentWindow();
@@ -49,10 +85,11 @@ export function AppHeader() {
         data-tauri-drag-region
       >
         <div
-          className="flex items-center justify-center size-8 rounded-lg bg-primary text-primary-foreground"
+          className="flex items-center justify-center size-8 rounded-full overflow-hidden pointer-events-none"
+          style={{ background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)" }}
           data-tauri-drag-region
         >
-          <Mic className="size-4 pointer-events-none" />
+          <DuneAppIcon />
         </div>
         <h1
           className="text-xl font-semibold"
