@@ -75,7 +75,8 @@ impl HotkeyManager {
     /// # Returns
     /// The keyboard shortcut string, or empty string if none registered
     pub fn get_current(&self) -> String {
-        self.current_hotkey.lock()
+        self.current_hotkey
+            .lock()
             .as_ref()
             .cloned()
             .unwrap_or_default()
@@ -87,7 +88,6 @@ impl Default for HotkeyManager {
         Self::new()
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -158,12 +158,12 @@ mod tests {
         let manager = HotkeyManager::new();
 
         manager.register("Ctrl+D".to_string(), || {}).unwrap();
-        
+
         // Multiple unregisters should be fine
         assert!(manager.unregister().is_ok());
         assert!(manager.unregister().is_ok());
         assert!(manager.unregister().is_ok());
-        
+
         assert_eq!(manager.get_current(), "");
     }
 

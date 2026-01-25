@@ -35,7 +35,7 @@ export function useRecordingState() {
             setState("recording");
           }
           // When recording stops, we wait for processing-status
-        }
+        },
       );
 
       const unlistenProcessing = await listen<{ isProcessing: boolean }>(
@@ -47,7 +47,7 @@ export function useRecordingState() {
             setState("processing");
           }
           // When processing stops, we wait for transcription-complete
-        }
+        },
       );
 
       const unlistenTranscription = await listen<{ text: string }>(
@@ -61,7 +61,7 @@ export function useRecordingState() {
           setTimeout(() => {
             if (mounted) setState("idle");
           }, 2000);
-        }
+        },
       );
 
       return () => {

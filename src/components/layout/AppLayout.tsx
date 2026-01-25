@@ -39,9 +39,7 @@ export function AppLayout() {
       <div className="relative z-10 flex flex-col h-full">
         <AppHeader />
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 overflow-auto p-6">
-          {renderTabContent()}
-        </main>
+        <main className="flex-1 overflow-auto p-6">{renderTabContent()}</main>
       </div>
     </div>
   );

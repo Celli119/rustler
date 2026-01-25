@@ -1,9 +1,11 @@
 # Rustler Project Overview
 
 ## Purpose
+
 Rustler is a speech-to-text desktop application built with Tauri. It uses Whisper for transcription, allowing users to record audio and convert it to text.
 
 ## Tech Stack
+
 - **Framework**: Tauri 2.x (Rust backend + web frontend)
 - **Audio**: cpal for cross-platform audio capture
 - **Transcription**: whisper-rs (Whisper.cpp Rust bindings)
@@ -13,6 +15,7 @@ Rustler is a speech-to-text desktop application built with Tauri. It uses Whispe
 - **Serialization**: serde/serde_json for settings
 
 ## Project Structure
+
 ```
 src/
 ├── lib.rs          - Main library entry point, AppState definition

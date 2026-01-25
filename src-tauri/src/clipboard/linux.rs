@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use std::process::Command;
 
 /// Detects if the system is running Wayland or X11
@@ -42,7 +42,8 @@ fn paste_text_x11(text: &str) -> Result<()> {
 
     if let Some(mut stdin) = child.stdin.take() {
         use std::io::Write;
-        stdin.write_all(text.as_bytes())
+        stdin
+            .write_all(text.as_bytes())
             .context("Failed to write to xclip")?;
     }
 
@@ -70,7 +71,7 @@ fn paste_text_wayland(text: &str) -> Result<()> {
 
     // Copy to both Wayland and X11 clipboards for compatibility
     copy_to_wayland_clipboard(text)?;
-    copy_to_x11_clipboard(text);  // Best effort, don't fail if xclip missing
+    copy_to_x11_clipboard(text); // Best effort, don't fail if xclip missing
 
     // Try wtype first (native Wayland), fall back to xdotool (XWayland)
     if let Err(wtype_err) = simulate_paste_wtype() {
@@ -91,7 +92,8 @@ fn copy_to_wayland_clipboard(text: &str) -> Result<()> {
 
     if let Some(mut stdin) = child.stdin.take() {
         use std::io::Write;
-        stdin.write_all(text.as_bytes())
+        stdin
+            .write_all(text.as_bytes())
             .context("Failed to write to wl-copy")?;
     }
 
@@ -105,14 +107,18 @@ fn copy_to_x11_clipboard(text: &str) {
     let result = (|| -> Result<()> {
         let mut child = Command::new("xclip")
             .args(["-selection", "clipboard"])
-            .env("DISPLAY", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()))
+            .env(
+                "DISPLAY",
+                std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()),
+            )
             .stdin(std::process::Stdio::piped())
             .spawn()
             .context("Failed to spawn xclip")?;
 
         if let Some(mut stdin) = child.stdin.take() {
             use std::io::Write;
-            stdin.write_all(text.as_bytes())
+            stdin
+                .write_all(text.as_bytes())
                 .context("Failed to write to xclip")?;
         }
 
@@ -145,7 +151,10 @@ fn simulate_paste_wtype() -> Result<()> {
 fn simulate_paste_xdotool() -> Result<()> {
     let output = Command::new("xdotool")
         .args(["key", "ctrl+v"])
-        .env("DISPLAY", std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()))
+        .env(
+            "DISPLAY",
+            std::env::var("DISPLAY").unwrap_or_else(|_| ":0".to_string()),
+        )
         .output()
         .context("Failed to execute xdotool")?;
 

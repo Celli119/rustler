@@ -23,7 +23,9 @@ impl Transcriber {
         log::info!("Creating transcriber with model: {:?}", model_path);
 
         let context = WhisperContext::new_with_params(
-            model_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
+            model_path
+                .to_str()
+                .ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
             WhisperContextParameters::default(),
         )?;
 
@@ -83,7 +85,6 @@ impl Transcriber {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,7 +114,7 @@ mod tests {
         // Create a temporary file with invalid model data
         let temp_dir = std::env::temp_dir();
         let fake_model_path = temp_dir.join(format!("fake_model_{}.bin", std::process::id()));
-        
+
         // Write some garbage data that's not a valid whisper model
         std::fs::write(&fake_model_path, b"not a valid whisper model").unwrap();
 

@@ -37,6 +37,8 @@ pub fn paste_text(text: &str) -> Result<()> {
 
     #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
     {
-        Err(anyhow::anyhow!("Clipboard paste not supported on this platform"))
+        Err(anyhow::anyhow!(
+            "Clipboard paste not supported on this platform"
+        ))
     }
 }

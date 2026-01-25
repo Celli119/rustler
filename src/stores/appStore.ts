@@ -43,22 +43,18 @@ export const useAppStore = create<AppState>((set) => ({
   downloadProgress: 0,
 
   // Actions
-  setRecording: (recording) =>
-    set({ isRecording: recording }),
+  setRecording: (recording) => set({ isRecording: recording }),
 
-  setProcessing: (processing) =>
-    set({ isProcessing: processing }),
+  setProcessing: (processing) => set({ isProcessing: processing }),
 
-  setTranscription: (text) =>
-    set({ transcription: text }),
+  setTranscription: (text) => set({ transcription: text }),
 
   setSettings: (newSettings) =>
     set((state) => ({
       settings: { ...state.settings, ...newSettings },
     })),
 
-  setModels: (models) =>
-    set({ models }),
+  setModels: (models) => set({ models }),
 
   setDownloading: (modelId, progress) =>
     set({ downloadingModel: modelId, downloadProgress: progress }),

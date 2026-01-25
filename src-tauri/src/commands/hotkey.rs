@@ -2,7 +2,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[cfg(target_os = "linux")]
-use crate::hotkey::wayland::{WaylandHotkeyManager, reset_portal_state};
+use crate::hotkey::wayland::{reset_portal_state, WaylandHotkeyManager};
 #[cfg(target_os = "linux")]
 use std::sync::OnceLock;
 

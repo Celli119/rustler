@@ -79,7 +79,8 @@ export function PillOverlay() {
       case "done":
         return {
           bg: "bg-green-500",
-          text: transcription?.slice(0, 50) + (transcription && transcription.length > 50 ? "..." : ""),
+          text:
+            transcription?.slice(0, 50) + (transcription && transcription.length > 50 ? "..." : ""),
           icon: "✓",
           animate: false,
         };
@@ -107,9 +108,7 @@ export function PillOverlay() {
       <div
         className={`${config.bg} text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 transition-all duration-300`}
       >
-        <span className={config.animate ? "animate-pulse" : ""}>
-          {config.icon}
-        </span>
+        <span className={config.animate ? "animate-pulse" : ""}>{config.icon}</span>
         <span className="font-medium text-sm">{config.text}</span>
       </div>
     </div>

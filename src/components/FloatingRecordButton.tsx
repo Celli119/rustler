@@ -42,8 +42,16 @@ export function FloatingRecordButton() {
 
     setIsDragging(true);
     setDragOffset({
-      x: e.clientX - (useRightBottom ? (e.currentTarget as HTMLElement).getBoundingClientRect().left : position.x),
-      y: e.clientY - (useRightBottom ? (e.currentTarget as HTMLElement).getBoundingClientRect().top : position.y),
+      x:
+        e.clientX -
+        (useRightBottom
+          ? (e.currentTarget as HTMLElement).getBoundingClientRect().left
+          : position.x),
+      y:
+        e.clientY -
+        (useRightBottom
+          ? (e.currentTarget as HTMLElement).getBoundingClientRect().top
+          : position.y),
     });
   };
 
@@ -89,11 +97,7 @@ export function FloatingRecordButton() {
         bg: "bg-blue-500 hover:bg-blue-600",
         ring: "ring-blue-300",
         icon: (
-          <svg
-            className="w-8 h-8 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
               cx="12"
@@ -118,11 +122,7 @@ export function FloatingRecordButton() {
         bg: "bg-red-500 hover:bg-red-600",
         ring: "ring-red-300",
         icon: (
-          <svg
-            className="w-8 h-8 animate-pulse"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-8 h-8 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
             <rect x="6" y="6" width="12" height="12" rx="2" />
           </svg>
         ),
@@ -162,15 +162,19 @@ export function FloatingRecordButton() {
   return (
     <div
       className="fixed z-[9999]"
-      style={useRightBottom ? {
-        right: "24px",
-        bottom: "24px",
-        pointerEvents: "auto",
-      } : {
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        pointerEvents: "auto",
-      }}
+      style={
+        useRightBottom
+          ? {
+              right: "24px",
+              bottom: "24px",
+              pointerEvents: "auto",
+            }
+          : {
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              pointerEvents: "auto",
+            }
+      }
       onMouseDown={handleMouseDown}
     >
       {/* Drag handle area */}

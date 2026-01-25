@@ -44,12 +44,8 @@ export function useHotkey() {
   const validateHotkey = useCallback((hotkey: string): boolean => {
     // Must have at least one modifier and one key
     const parts = hotkey.split("+");
-    const hasModifier = parts.some((p) =>
-      ["Ctrl", "Alt", "Shift", "Super"].includes(p)
-    );
-    const hasKey = parts.some(
-      (p) => !["Ctrl", "Alt", "Shift", "Super"].includes(p)
-    );
+    const hasModifier = parts.some((p) => ["Ctrl", "Alt", "Shift", "Super"].includes(p));
+    const hasKey = parts.some((p) => !["Ctrl", "Alt", "Shift", "Super"].includes(p));
     return hasModifier && hasKey && parts.length >= 2;
   }, []);
 

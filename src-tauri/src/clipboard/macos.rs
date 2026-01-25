@@ -1,4 +1,4 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use std::process::Command;
 
 /// Pastes text on macOS using AppleScript

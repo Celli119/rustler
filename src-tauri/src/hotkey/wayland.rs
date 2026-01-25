@@ -9,8 +9,8 @@
 
 use ashpd::desktop::global_shortcuts::{GlobalShortcuts, NewShortcut};
 use parking_lot::Mutex;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use tokio::sync::mpsc;
 
 /// Flag to track if we've already detected that GlobalShortcuts is unavailable
@@ -69,12 +69,10 @@ impl WaylandHotkeyManager {
         }
 
         // Prevent concurrent registration attempts (React Strict Mode can cause duplicate calls)
-        if REGISTRATION_IN_PROGRESS.compare_exchange(
-            false,
-            true,
-            Ordering::SeqCst,
-            Ordering::SeqCst
-        ).is_err() {
+        if REGISTRATION_IN_PROGRESS
+            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+            .is_err()
+        {
             log::warn!("Wayland: Registration already in progress, skipping duplicate call");
             return Ok(());
         }
@@ -126,10 +124,12 @@ impl WaylandHotkeyManager {
         })?;
 
         // Define the shortcut
-        let new_shortcut = NewShortcut::new(shortcut_id, description)
-            .preferred_trigger(preferred_trigger);
+        let new_shortcut =
+            NewShortcut::new(shortcut_id, description).preferred_trigger(preferred_trigger);
 
-        log::info!("Wayland: A system dialog may appear - please configure the shortcut in the dialog");
+        log::info!(
+            "Wayland: A system dialog may appear - please configure the shortcut in the dialog"
+        );
 
         // Bind the shortcut to the session (None for window identifier)
         // Timeout is 60 seconds because GNOME shows a dialog that requires user interaction
@@ -238,12 +238,17 @@ impl WaylandHotkeyManager {
         let is_wayland_desktop = std::env::var("XDG_CURRENT_DESKTOP")
             .map(|v| {
                 let v = v.to_lowercase();
-                v.contains("gnome") || v.contains("kde") || v.contains("sway") ||
-                v.contains("hyprland") || v.contains("wlroots")
+                v.contains("gnome")
+                    || v.contains("kde")
+                    || v.contains("sway")
+                    || v.contains("hyprland")
+                    || v.contains("wlroots")
             })
             .unwrap_or(false);
 
-        let result = has_wayland_display || is_wayland_session || (is_wayland_desktop && !std::env::var("DISPLAY").is_ok());
+        let result = has_wayland_display
+            || is_wayland_session
+            || (is_wayland_desktop && !std::env::var("DISPLAY").is_ok());
 
         log::info!(
             "Wayland detection: WAYLAND_DISPLAY={}, XDG_SESSION_TYPE=wayland: {}, wayland_desktop: {} -> {}",

@@ -9,12 +9,7 @@ interface TranscriptionItemProps {
   onDelete: (id: string) => void;
 }
 
-export function TranscriptionItem({
-  record,
-  index,
-  onCopy,
-  onDelete,
-}: TranscriptionItemProps) {
+export function TranscriptionItem({ record, index, onCopy, onDelete }: TranscriptionItemProps) {
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -33,30 +28,18 @@ export function TranscriptionItem({
 
   return (
     <div className="group flex items-start gap-3 py-2 border-b border-border/30 last:border-b-0 hover:bg-muted/30 transition-colors px-1">
-        <span className="text-xs text-muted-foreground font-mono mt-0.5">
-          #{index + 1}
-        </span>
+      <span className="text-xs text-muted-foreground font-mono mt-0.5">#{index + 1}</span>
 
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground line-clamp-2">{record.text}</p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-xs text-muted-foreground">
-              {formatTimestamp(record.timestamp)}
-            </span>
-            {record.model && (
-              <span className="text-xs text-muted-foreground">
-                · {record.model}
-              </span>
-            )}
-          </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-foreground line-clamp-2">{record.text}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-xs text-muted-foreground">{formatTimestamp(record.timestamp)}</span>
+          {record.model && <span className="text-xs text-muted-foreground">· {record.model}</span>}
         </div>
+      </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={() => onCopy(record.text)}
-        >
+        <Button variant="ghost" size="icon-xs" onClick={() => onCopy(record.text)}>
           <Copy className="size-3" />
         </Button>
         <Button

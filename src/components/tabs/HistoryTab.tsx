@@ -18,8 +18,7 @@ import { TranscriptionItem } from "@/components/TranscriptionItem";
 import { useHistoryStore } from "@/stores/historyStore";
 
 export function HistoryTab() {
-  const { records, isLoading, loadHistory, removeFromHistory, clearAllHistory } =
-    useHistoryStore();
+  const { records, isLoading, loadHistory, removeFromHistory, clearAllHistory } = useHistoryStore();
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -50,9 +49,7 @@ export function HistoryTab() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Transcriptions</CardTitle>
-              <CardDescription>
-                Your voice recording history
-              </CardDescription>
+              <CardDescription>Your voice recording history</CardDescription>
             </div>
             {records.length > 0 && (
               <AlertDialog open={clearDialogOpen} onOpenChange={setClearDialogOpen}>
@@ -72,7 +69,9 @@ export function HistoryTab() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Clear all history?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete all {records.length} transcription{records.length !== 1 ? "s" : ""} from your history. This action cannot be undone.
+                      This will permanently delete all {records.length} transcription
+                      {records.length !== 1 ? "s" : ""} from your history. This action cannot be
+                      undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>

@@ -18,7 +18,6 @@ function setClickThrough(ignore: boolean) {
   });
 }
 
-
 /**
  * Animated dune icon component using SVG SMIL for path morphing
  */
@@ -85,10 +84,7 @@ function DuneIcon({ isAnimating }: { isAnimating: boolean }) {
       </path>
 
       {/* Front dune layer */}
-      <path
-        d="M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z"
-        fill="url(#duneGradient3)"
-      >
+      <path d="M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z" fill="url(#duneGradient3)">
         {isAnimating && (
           <animate
             attributeName="d"
@@ -168,7 +164,6 @@ export function OverlayButton() {
     }
   };
 
-
   const isRecording = state === "recording";
   const isProcessing = state === "processing";
 
@@ -176,9 +171,7 @@ export function OverlayButton() {
   const shouldHide = showOnlyDuringRecording && state === "idle";
 
   // Shadow color based on state
-  const shadowColor = isRecording
-    ? "rgba(205, 127, 50, 0.7)"
-    : "rgba(180, 83, 40, 0.5)";
+  const shadowColor = isRecording ? "rgba(205, 127, 50, 0.7)" : "rgba(180, 83, 40, 0.5)";
 
   return (
     <div

@@ -22,12 +22,7 @@ import {
  * everything works regardless of which tab is active.
  */
 export function useHotkeyListener() {
-  const {
-    isRecording,
-    setRecording,
-    setProcessing,
-    setTranscription,
-  } = useAppStore();
+  const { isRecording, setRecording, setProcessing, setTranscription } = useAppStore();
 
   const { addToHistory } = useHistoryStore();
 
@@ -84,7 +79,7 @@ export function useHotkeyListener() {
           if (!mounted) return;
           console.log("Global: recording-status", event.payload);
           setRecording(event.payload.isRecording);
-        }
+        },
       );
 
       // Listen to processing status from backend
@@ -94,7 +89,7 @@ export function useHotkeyListener() {
           if (!mounted) return;
           console.log("Global: processing-status", event.payload);
           setProcessing(event.payload.isProcessing);
-        }
+        },
       );
 
       // Listen to transcription complete from backend
@@ -104,7 +99,7 @@ export function useHotkeyListener() {
           if (!mounted) return;
           console.log("Global: transcription-complete", event.payload);
           setTranscription(event.payload.text);
-        }
+        },
       );
 
       // Listen for global hotkey trigger

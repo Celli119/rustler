@@ -62,9 +62,7 @@ export function SettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Language</CardTitle>
-          <CardDescription>
-            Select the language for transcription
-          </CardDescription>
+          <CardDescription>Select the language for transcription</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -88,9 +86,7 @@ export function SettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Performance</CardTitle>
-          <CardDescription>
-            Configure performance-related settings
-          </CardDescription>
+          <CardDescription>Configure performance-related settings</CardDescription>
         </CardHeader>
         <CardContent>
           <GpuToggle />
@@ -100,9 +96,7 @@ export function SettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Overlay</CardTitle>
-          <CardDescription>
-            Configure the floating overlay button
-          </CardDescription>
+          <CardDescription>Configure the floating overlay button</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between space-x-2">
@@ -120,9 +114,7 @@ export function SettingsTab() {
           </div>
           {overlaySettingChanged && (
             <Alert variant="warning" className="flex items-center justify-between">
-              <AlertDescription>
-                Restart required for this change to take effect
-              </AlertDescription>
+              <AlertDescription>Restart required for this change to take effect</AlertDescription>
               <Button size="sm" variant="outline" onClick={handleRestart}>
                 Restart
               </Button>

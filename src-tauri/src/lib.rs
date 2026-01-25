@@ -8,12 +8,12 @@ use std::sync::Arc;
 use tauri::{Manager, WindowEvent};
 
 // Module declarations
-mod commands;
-mod whisper;
 mod audio;
 mod clipboard;
+mod commands;
 mod hotkey;
 mod models;
+mod whisper;
 
 /// Application state shared across all Tauri commands
 #[derive(Default)]
@@ -43,7 +43,8 @@ pub fn run() {
             }
 
             // Setup global shortcut plugin
-            app.handle().plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
+            app.handle()
+                .plugin(tauri_plugin_global_shortcut::Builder::new().build())?;
 
             // Setup positioner plugin for window positioning
             app.handle().plugin(tauri_plugin_positioner::init())?;
@@ -113,9 +114,17 @@ pub fn run() {
                         // Position at bottom-right with margin
                         let pos_x = pos.x + size.width as i32 - 200; // 200px from right edge
                         let pos_y = pos.y + size.height as i32 - 150; // 150px from bottom
-                        let _ = overlay.set_position(tauri::PhysicalPosition { x: pos_x, y: pos_y });
-                        log::info!("Positioned overlay at ({}, {}) on monitor {}x{} at ({}, {})",
-                            pos_x, pos_y, size.width, size.height, pos.x, pos.y);
+                        let _ =
+                            overlay.set_position(tauri::PhysicalPosition { x: pos_x, y: pos_y });
+                        log::info!(
+                            "Positioned overlay at ({}, {}) on monitor {}x{} at ({}, {})",
+                            pos_x,
+                            pos_y,
+                            size.width,
+                            size.height,
+                            pos.x,
+                            pos.y
+                        );
                     } else {
                         // Fallback if no monitors detected
                         let _ = overlay.set_position(tauri::PhysicalPosition { x: 100, y: 100 });

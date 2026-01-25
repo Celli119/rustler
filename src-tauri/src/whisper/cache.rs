@@ -50,7 +50,12 @@ impl ModelCache {
     /// If the requested model is already cached with the same GPU setting, returns it immediately.
     /// If a different model or GPU setting is requested, unloads the current one first.
     /// Updates the last_used timestamp on access.
-    pub fn get_or_load(&self, model_id: &str, model_path: PathBuf, use_gpu: bool) -> Result<ModelGuard<'_>> {
+    pub fn get_or_load(
+        &self,
+        model_id: &str,
+        model_path: PathBuf,
+        use_gpu: bool,
+    ) -> Result<ModelGuard<'_>> {
         let mut cached = self.cached.lock();
 
         // Check if we have the right model cached with the same GPU setting
@@ -67,18 +72,28 @@ impl ModelCache {
                 // Different model or GPU setting requested, unload current one
                 log::info!(
                     "Unloading cached model '{}' (GPU: {}) to load '{}' (GPU: {})",
-                    model.model_id, model.use_gpu, model_id, use_gpu
+                    model.model_id,
+                    model.use_gpu,
+                    model_id,
+                    use_gpu
                 );
             }
         }
 
         // Load the new model with specified GPU setting
-        log::info!("Loading model '{}' from {:?} (GPU: {})", model_id, model_path, use_gpu);
+        log::info!(
+            "Loading model '{}' from {:?} (GPU: {})",
+            model_id,
+            model_path,
+            use_gpu
+        );
         let mut params = WhisperContextParameters::default();
         params.use_gpu(use_gpu);
 
         let context = WhisperContext::new_with_params(
-            model_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
+            model_path
+                .to_str()
+                .ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
             params,
         )?;
 
@@ -144,7 +159,9 @@ impl ModelCache {
     /// Returns info about the currently cached model, if any
     pub fn get_cached_info(&self) -> Option<(String, Duration)> {
         let cached = self.cached.lock();
-        cached.as_ref().map(|m| (m.model_id.clone(), m.last_used.elapsed()))
+        cached
+            .as_ref()
+            .map(|m| (m.model_id.clone(), m.last_used.elapsed()))
     }
 }
 

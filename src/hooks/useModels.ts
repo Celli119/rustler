@@ -1,15 +1,9 @@
 import { useEffect, useCallback } from "react";
 import { useAppStore } from "@/stores/appStore";
-import {
-  getAvailableModels,
-  downloadModel,
-  deleteModel,
-  onDownloadProgress,
-} from "@/lib/tauri";
+import { getAvailableModels, downloadModel, deleteModel, onDownloadProgress } from "@/lib/tauri";
 
 export function useModels() {
-  const { models, downloadingModel, downloadProgress, setModels, setDownloading } =
-    useAppStore();
+  const { models, downloadingModel, downloadProgress, setModels, setDownloading } = useAppStore();
 
   // Load models on mount and set up download progress listener
   useEffect(() => {
@@ -53,7 +47,7 @@ export function useModels() {
         throw error;
       }
     },
-    [setModels, setDownloading]
+    [setModels, setDownloading],
   );
 
   const handleDelete = useCallback(
@@ -68,7 +62,7 @@ export function useModels() {
         throw error;
       }
     },
-    [setModels]
+    [setModels],
   );
 
   return {

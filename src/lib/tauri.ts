@@ -89,44 +89,33 @@ export async function pasteText(text: string): Promise<void> {
 
 // Event listeners
 export async function onDownloadProgress(
-  callback: (progress: DownloadProgressPayload) => void
+  callback: (progress: DownloadProgressPayload) => void,
 ): Promise<() => void> {
-  const unlisten = await listen<DownloadProgressPayload>(
-    "download-progress",
-    (event) => {
-      callback(event.payload);
-    }
-  );
+  const unlisten = await listen<DownloadProgressPayload>("download-progress", (event) => {
+    callback(event.payload);
+  });
   return unlisten;
 }
 
 export async function onRecordingStatus(
-  callback: (status: RecordingStatusPayload) => void
+  callback: (status: RecordingStatusPayload) => void,
 ): Promise<() => void> {
-  const unlisten = await listen<RecordingStatusPayload>(
-    "recording-status",
-    (event) => {
-      callback(event.payload);
-    }
-  );
+  const unlisten = await listen<RecordingStatusPayload>("recording-status", (event) => {
+    callback(event.payload);
+  });
   return unlisten;
 }
 
 export async function onTranscriptionComplete(
-  callback: (result: TranscriptionCompletePayload) => void
+  callback: (result: TranscriptionCompletePayload) => void,
 ): Promise<() => void> {
-  const unlisten = await listen<TranscriptionCompletePayload>(
-    "transcription-complete",
-    (event) => {
-      callback(event.payload);
-    }
-  );
+  const unlisten = await listen<TranscriptionCompletePayload>("transcription-complete", (event) => {
+    callback(event.payload);
+  });
   return unlisten;
 }
 
-export async function onHotkeyTriggered(
-  callback: () => void
-): Promise<() => void> {
+export async function onHotkeyTriggered(callback: () => void): Promise<() => void> {
   const unlisten = await listen<void>("hotkey-triggered", () => {
     callback();
   });
@@ -145,7 +134,7 @@ export async function getHistory(): Promise<TranscriptionRecord[]> {
 export async function addHistory(
   text: string,
   durationMs?: number,
-  model?: string
+  model?: string,
 ): Promise<TranscriptionRecord> {
   return invoke("add_history", { text, durationMs, model });
 }

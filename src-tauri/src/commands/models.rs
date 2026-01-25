@@ -94,17 +94,20 @@ pub async fn download_model(model_id: String, window: Window) -> Result<(), Stri
     let mut last_reported: i32 = -1;
 
     // Download with progress callback (throttled to only emit on whole percentage changes)
-    downloader.download(&model_id, |progress| {
-        let percentage = (progress * 100.0) as i32;
-        if percentage > last_reported {
-            last_reported = percentage;
-            let payload = DownloadProgressPayload {
-                model_id: model_id_clone.clone(),
-                percentage: percentage as f64,
-            };
-            let _ = window.emit("download-progress", payload);
-        }
-    }).await.map_err(|e| e.to_string())?;
+    downloader
+        .download(&model_id, |progress| {
+            let percentage = (progress * 100.0) as i32;
+            if percentage > last_reported {
+                last_reported = percentage;
+                let payload = DownloadProgressPayload {
+                    model_id: model_id_clone.clone(),
+                    percentage: percentage as f64,
+                };
+                let _ = window.emit("download-progress", payload);
+            }
+        })
+        .await
+        .map_err(|e| e.to_string())?;
 
     log::info!("Model downloaded successfully: {}", model_id);
     Ok(())
@@ -129,8 +132,7 @@ pub async fn delete_model(model_id: String) -> Result<(), String> {
         return Err(format!("Model '{}' is not downloaded", model_id));
     }
 
-    std::fs::remove_file(&model_path)
-        .map_err(|e| format!("Failed to delete model: {}", e))?;
+    std::fs::remove_file(&model_path).map_err(|e| format!("Failed to delete model: {}", e))?;
 
     log::info!("Model deleted successfully: {}", model_id);
     Ok(())

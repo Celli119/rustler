@@ -53,20 +53,10 @@
     ],
     "linux": {
       "deb": {
-        "depends": [
-          "wl-clipboard",
-          "wtype",
-          "xclip",
-          "xdotool"
-        ]
+        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"]
       },
       "rpm": {
-        "depends": [
-          "wl-clipboard",
-          "wtype",
-          "xclip",
-          "xdotool"
-        ]
+        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"]
       }
     }
   }

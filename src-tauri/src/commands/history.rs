@@ -38,9 +38,7 @@ fn load_history() -> HistoryStorage {
 
     if path.exists() {
         match fs::read_to_string(&path) {
-            Ok(content) => {
-                serde_json::from_str(&content).unwrap_or_default()
-            }
+            Ok(content) => serde_json::from_str(&content).unwrap_or_default(),
             Err(_) => HistoryStorage::default(),
         }
     } else {
@@ -54,8 +52,7 @@ fn save_history(storage: &HistoryStorage) -> Result<(), String> {
     let content = serde_json::to_string_pretty(storage)
         .map_err(|e| format!("Failed to serialize history: {}", e))?;
 
-    fs::write(&path, content)
-        .map_err(|e| format!("Failed to write history file: {}", e))?;
+    fs::write(&path, content).map_err(|e| format!("Failed to write history file: {}", e))?;
 
     Ok(())
 }

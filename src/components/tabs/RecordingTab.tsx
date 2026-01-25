@@ -4,7 +4,8 @@ import { HotkeyConfig } from "@/components/HotkeyConfig";
 import { useRecording } from "@/hooks/useRecording";
 
 export function RecordingTab() {
-  const { isRecording, isProcessing, transcription, startRecording, stopRecording } = useRecording();
+  const { isRecording, isProcessing, transcription, startRecording, stopRecording } =
+    useRecording();
 
   const handleToggleRecording = () => {
     if (isRecording) {
@@ -19,9 +20,7 @@ export function RecordingTab() {
       <Card>
         <CardHeader>
           <CardTitle>Test Recording</CardTitle>
-          <CardDescription>
-            Test voice recording manually
-          </CardDescription>
+          <CardDescription>Test voice recording manually</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
@@ -44,9 +43,7 @@ export function RecordingTab() {
       <Card>
         <CardHeader>
           <CardTitle>Hotkey Configuration</CardTitle>
-          <CardDescription>
-            Set a global hotkey to start/stop recording
-          </CardDescription>
+          <CardDescription>Set a global hotkey to start/stop recording</CardDescription>
         </CardHeader>
         <CardContent>
           <HotkeyConfig />

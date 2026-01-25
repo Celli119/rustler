@@ -18,7 +18,9 @@ const themeOptions: { value: Theme; label: string; icon: React.ReactNode }[] = [
 export function ThemeToggle() {
   const { theme, setTheme } = useThemeStore();
 
-  const currentIcon = themeOptions.find((opt) => opt.value === theme)?.icon ?? <Sun className="size-4" />;
+  const currentIcon = themeOptions.find((opt) => opt.value === theme)?.icon ?? (
+    <Sun className="size-4" />
+  );
 
   return (
     <DropdownMenu>

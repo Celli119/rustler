@@ -1,6 +1,12 @@
 import { useEffect, useCallback } from "react";
 import { useAppStore } from "@/stores/appStore";
-import { getSettings, saveSettings, registerHotkey, isWaylandSession, resetWaylandHotkey } from "@/lib/tauri";
+import {
+  getSettings,
+  saveSettings,
+  registerHotkey,
+  isWaylandSession,
+  resetWaylandHotkey,
+} from "@/lib/tauri";
 import type { Settings } from "@/lib/tauri";
 
 // Module-level flag to prevent duplicate hotkey registration across all hook instances
@@ -47,7 +53,7 @@ export function useSettings() {
         console.error("Failed to save settings:", error);
       }
     },
-    [settings, setSettings]
+    [settings, setSettings],
   );
 
   const updateHotkey = useCallback(
@@ -71,7 +77,7 @@ export function useSettings() {
         throw error;
       }
     },
-    [updateSettings]
+    [updateSettings],
   );
 
   return {

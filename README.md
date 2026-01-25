@@ -24,11 +24,11 @@ A fast, privacy-focused voice transcription app built with Tauri and Rust. Trans
 
 Download the latest release for your platform from the [Releases](https://github.com/Celli119/rustler/releases) page.
 
-| Platform | Format |
-|----------|--------|
-| Linux | `.deb`, `.rpm`, `.AppImage` |
-| macOS | `.dmg` |
-| Windows | `.msi`, `.exe` |
+| Platform | Format                      |
+| -------- | --------------------------- |
+| Linux    | `.deb`, `.rpm`, `.AppImage` |
+| macOS    | `.dmg`                      |
+| Windows  | `.msi`, `.exe`              |
 
 ### Build from Source
 
@@ -78,6 +78,7 @@ bun run tauri build
 ## Configuration
 
 Settings are stored in:
+
 - Linux: `~/.config/rustler/`
 - macOS: `~/Library/Application Support/rustler/`
 - Windows: `%APPDATA%\rustler\`

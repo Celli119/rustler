@@ -47,9 +47,12 @@ describe("useSettings", () => {
     });
 
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("save_settings", expect.objectContaining({
-        settings: expect.objectContaining({ language: "es" }),
-      }));
+      expect(mockInvoke).toHaveBeenCalledWith(
+        "save_settings",
+        expect.objectContaining({
+          settings: expect.objectContaining({ language: "es" }),
+        }),
+      );
     });
   });
 
@@ -61,14 +64,17 @@ describe("useSettings", () => {
     });
 
     await waitFor(() => {
-      expect(mockInvoke).toHaveBeenCalledWith("save_settings", expect.objectContaining({
-        settings: expect.objectContaining({
-          hotkey: "Ctrl+Shift+Space",
-          model: "base",
-          language: "en",
-          useGpu: true,
+      expect(mockInvoke).toHaveBeenCalledWith(
+        "save_settings",
+        expect.objectContaining({
+          settings: expect.objectContaining({
+            hotkey: "Ctrl+Shift+Space",
+            model: "base",
+            language: "en",
+            useGpu: true,
+          }),
         }),
-      }));
+      );
     });
   });
 

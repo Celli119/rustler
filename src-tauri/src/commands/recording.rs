@@ -1,4 +1,4 @@
-use crate::{AppState, audio::recorder::AudioRecorder};
+use crate::{audio::recorder::AudioRecorder, AppState};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
 
@@ -13,7 +13,7 @@ use tauri::{AppHandle, Emitter, State};
 #[tauri::command]
 pub async fn start_recording(
     app: AppHandle,
-    state: State<'_, Arc<AppState>>
+    state: State<'_, Arc<AppState>>,
 ) -> Result<(), String> {
     log::info!("Starting audio recording");
 
@@ -31,7 +31,10 @@ pub async fn start_recording(
     *recording = Some(handle);
 
     // Emit recording status to all windows
-    let _ = app.emit("recording-status", serde_json::json!({ "isRecording": true }));
+    let _ = app.emit(
+        "recording-status",
+        serde_json::json!({ "isRecording": true }),
+    );
 
     log::info!("Audio recording started successfully");
     Ok(())
@@ -48,21 +51,26 @@ pub async fn start_recording(
 #[tauri::command]
 pub async fn stop_recording(
     app: AppHandle,
-    state: State<'_, Arc<AppState>>
+    state: State<'_, Arc<AppState>>,
 ) -> Result<String, String> {
     log::info!("Stopping audio recording");
 
     let mut recording = state.recording.lock();
 
     // Check if recording is in progress
-    let handle = recording.take()
+    let handle = recording
+        .take()
         .ok_or_else(|| "No recording in progress".to_string())?;
 
     // Emit recording stopped status to all windows
-    let _ = app.emit("recording-status", serde_json::json!({ "isRecording": false }));
+    let _ = app.emit(
+        "recording-status",
+        serde_json::json!({ "isRecording": false }),
+    );
 
     // Stop recording and get audio data
-    let audio_data = handle.stop()
+    let audio_data = handle
+        .stop()
         .map_err(|e| format!("Failed to stop recording: {}", e))?;
 
     // Save audio data to temporary file
@@ -86,11 +94,13 @@ pub async fn stop_recording(
 
     for sample in audio_data {
         let amplitude = (sample * i16::MAX as f32) as i16;
-        writer.write_sample(amplitude)
+        writer
+            .write_sample(amplitude)
             .map_err(|e| format!("Failed to write audio sample: {}", e))?;
     }
 
-    writer.finalize()
+    writer
+        .finalize()
         .map_err(|e| format!("Failed to finalize WAV file: {}", e))?;
 
     let path_str = audio_path.to_string_lossy().to_string();

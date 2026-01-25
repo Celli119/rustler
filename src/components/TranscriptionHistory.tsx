@@ -7,8 +7,7 @@ import { TranscriptionItem } from "./TranscriptionItem";
 import { useHistoryStore } from "@/stores/historyStore";
 
 export function TranscriptionHistory() {
-  const { records, isLoading, loadHistory, removeFromHistory, clearAllHistory } =
-    useHistoryStore();
+  const { records, isLoading, loadHistory, removeFromHistory, clearAllHistory } = useHistoryStore();
 
   useEffect(() => {
     loadHistory();
@@ -59,9 +58,7 @@ export function TranscriptionHistory() {
         ) : records.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Mic className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No transcriptions yet
-            </p>
+            <p className="text-sm text-muted-foreground">No transcriptions yet</p>
             <p className="text-xs text-muted-foreground mt-1">
               Press your hotkey to start recording
             </p>

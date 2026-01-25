@@ -24,8 +24,10 @@ impl WhisperContext {
 
         let params = WhisperContextParameters::default();
         let context = WRContext::new_with_params(
-            model_path.to_str().ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
-            params
+            model_path
+                .to_str()
+                .ok_or_else(|| anyhow::anyhow!("Invalid model path"))?,
+            params,
         )?;
 
         log::info!("Whisper model loaded successfully");

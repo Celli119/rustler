@@ -1,6 +1,7 @@
 # Suggested Commands for Development
 
 ## Build Commands
+
 ```bash
 # Build the project
 cargo build
@@ -10,6 +11,7 @@ cargo build --release
 ```
 
 ## Testing Commands
+
 ```bash
 # Run all tests
 cargo test
@@ -23,6 +25,7 @@ cargo test commands::settings::tests
 ```
 
 ## Linting and Formatting
+
 ```bash
 # Format code
 cargo fmt
@@ -38,6 +41,7 @@ cargo clippy -- -D warnings
 ```
 
 ## Tauri-specific Commands
+
 ```bash
 # Run the application in dev mode
 cargo tauri dev

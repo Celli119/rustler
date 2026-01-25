@@ -17,11 +17,7 @@ export function GpuToggle() {
           Use GPU for faster transcription (requires CUDA support)
         </p>
       </div>
-      <Switch
-        id="gpu-toggle"
-        checked={settings.useGpu}
-        onCheckedChange={handleToggle}
-      />
+      <Switch id="gpu-toggle" checked={settings.useGpu} onCheckedChange={handleToggle} />
     </div>
   );
 }

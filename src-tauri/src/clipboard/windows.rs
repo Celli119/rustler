@@ -1,11 +1,15 @@
-use anyhow::{Result, Context};
-use windows::Win32::UI::Input::KeyboardAndMouse::{
-    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS,
-    KEYEVENTF_KEYUP, VK_CONTROL, VK_V, VIRTUAL_KEY,
+use anyhow::{Context, Result};
+use windows::Win32::Foundation::{
+    GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE, HGLOBAL, HWND,
 };
-use windows::Win32::System::DataExchange::{SetClipboardData, OpenClipboard, CloseClipboard, EmptyClipboard};
-use windows::Win32::Foundation::{HWND, GlobalAlloc, GlobalLock, GlobalUnlock, HGLOBAL, GMEM_MOVEABLE};
+use windows::Win32::System::DataExchange::{
+    CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
+};
 use windows::Win32::System::Memory::GLOBAL_ALLOC_FLAGS;
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
+    VIRTUAL_KEY, VK_CONTROL, VK_V,
+};
 
 const CF_UNICODETEXT: u32 = 13;
 
@@ -35,20 +39,17 @@ pub fn paste_text(text: &str) -> Result<()> {
 /// Sets text to the Windows clipboard
 unsafe fn set_clipboard_text(text: &str) -> Result<()> {
     // Open clipboard
-    OpenClipboard(HWND(0))
-        .context("Failed to open clipboard")?;
+    OpenClipboard(HWND(0)).context("Failed to open clipboard")?;
 
     // Empty clipboard
-    EmptyClipboard()
-        .context("Failed to empty clipboard")?;
+    EmptyClipboard().context("Failed to empty clipboard")?;
 
     // Convert text to UTF-16
     let wide: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
     let size = wide.len() * std::mem::size_of::<u16>();
 
     // Allocate global memory
-    let hglob = GlobalAlloc(GMEM_MOVEABLE, size)
-        .context("Failed to allocate global memory")?;
+    let hglob = GlobalAlloc(GMEM_MOVEABLE, size).context("Failed to allocate global memory")?;
 
     // Lock memory and copy text
     let locked = GlobalLock(hglob);
@@ -57,21 +58,15 @@ unsafe fn set_clipboard_text(text: &str) -> Result<()> {
         return Err(anyhow::anyhow!("Failed to lock global memory"));
     }
 
-    std::ptr::copy_nonoverlapping(
-        wide.as_ptr(),
-        locked as *mut u16,
-        wide.len(),
-    );
+    std::ptr::copy_nonoverlapping(wide.as_ptr(), locked as *mut u16, wide.len());
 
     GlobalUnlock(hglob).ok();
 
     // Set clipboard data
-    SetClipboardData(CF_UNICODETEXT, HGLOBAL(hglob.0))
-        .context("Failed to set clipboard data")?;
+    SetClipboardData(CF_UNICODETEXT, HGLOBAL(hglob.0)).context("Failed to set clipboard data")?;
 
     // Close clipboard
-    CloseClipboard()
-        .context("Failed to close clipboard")?;
+    CloseClipboard().context("Failed to close clipboard")?;
 
     Ok(())
 }
@@ -106,7 +101,11 @@ unsafe fn create_keyboard_input(vk: VIRTUAL_KEY, key_up: bool) -> INPUT {
             ki: KEYBDINPUT {
                 wVk: vk,
                 wScan: 0,
-                dwFlags: if key_up { KEYEVENTF_KEYUP } else { KEYBD_EVENT_FLAGS(0) },
+                dwFlags: if key_up {
+                    KEYEVENTF_KEYUP
+                } else {
+                    KEYBD_EVENT_FLAGS(0)
+                },
                 time: 0,
                 dwExtraInfo: 0,
             },

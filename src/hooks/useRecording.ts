@@ -16,13 +16,7 @@ import {
  * by useHotkeyListener in AppLayout.
  */
 export function useRecording() {
-  const {
-    isRecording,
-    isProcessing,
-    transcription,
-    setRecording,
-    setProcessing,
-  } = useAppStore();
+  const { isRecording, isProcessing, transcription, setRecording, setProcessing } = useAppStore();
 
   const { addToHistory } = useHistoryStore();
 

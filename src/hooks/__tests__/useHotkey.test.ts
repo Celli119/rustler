@@ -135,7 +135,9 @@ describe("useHotkey", () => {
     it("handles multiple modifiers", () => {
       const { result } = renderHook(() => useHotkey());
 
-      expect(result.current.formatHotkey(["Control", "Shift", "Alt", "a"])).toBe("Ctrl+Shift+Alt+A");
+      expect(result.current.formatHotkey(["Control", "Shift", "Alt", "a"])).toBe(
+        "Ctrl+Shift+Alt+A",
+      );
     });
 
     it("preserves special key names", () => {
@@ -218,13 +220,15 @@ describe("useHotkey", () => {
       });
 
       act(() => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-          key: "a",
-          ctrlKey: true,
-          altKey: false,
-          shiftKey: false,
-          metaKey: false,
-        }));
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "a",
+            ctrlKey: true,
+            altKey: false,
+            shiftKey: false,
+            metaKey: false,
+          }),
+        );
       });
 
       expect(result.current.recordedKeys).toContain("Control");
@@ -239,13 +243,15 @@ describe("useHotkey", () => {
       });
 
       act(() => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-          key: "r",
-          ctrlKey: true,
-          altKey: true,
-          shiftKey: false,
-          metaKey: false,
-        }));
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "r",
+            ctrlKey: true,
+            altKey: true,
+            shiftKey: false,
+            metaKey: false,
+          }),
+        );
       });
 
       expect(result.current.recordedKeys).toContain("Control");
@@ -259,10 +265,12 @@ describe("useHotkey", () => {
       expect(result.current.isRecording).toBe(false);
 
       act(() => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-          key: "a",
-          ctrlKey: true,
-        }));
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "a",
+            ctrlKey: true,
+          }),
+        );
       });
 
       expect(result.current.recordedKeys).toEqual([]);
@@ -276,14 +284,16 @@ describe("useHotkey", () => {
       });
 
       act(() => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-          key: "Control",
-          ctrlKey: true,
-        }));
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            key: "Control",
+            ctrlKey: true,
+          }),
+        );
       });
 
       expect(result.current.recordedKeys).toEqual(["Control"]);
-      expect(result.current.recordedKeys.filter(k => k === "Control")).toHaveLength(1);
+      expect(result.current.recordedKeys.filter((k) => k === "Control")).toHaveLength(1);
     });
   });
 });

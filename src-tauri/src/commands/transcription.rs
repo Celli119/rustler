@@ -1,7 +1,7 @@
-use crate::{AppState, whisper::cache::get_model_cache};
 use crate::commands::settings::get_settings;
-use std::sync::Arc;
+use crate::{whisper::cache::get_model_cache, AppState};
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
 use whisper_rs::{FullParams, SamplingStrategy};
 
@@ -29,16 +29,22 @@ fn calculate_rms(samples: &[f32]) -> f32 {
 fn is_audio_silent_or_too_short(samples: &[f32]) -> bool {
     // Check if audio is too short
     if samples.len() < MIN_AUDIO_SAMPLES {
-        log::info!("Audio too short ({} samples, minimum {}), skipping transcription",
-            samples.len(), MIN_AUDIO_SAMPLES);
+        log::info!(
+            "Audio too short ({} samples, minimum {}), skipping transcription",
+            samples.len(),
+            MIN_AUDIO_SAMPLES
+        );
         return true;
     }
 
     // Check RMS level
     let rms = calculate_rms(samples);
     if rms < SILENCE_RMS_THRESHOLD {
-        log::info!("Audio is silent (RMS: {:.6}, threshold: {}), skipping transcription",
-            rms, SILENCE_RMS_THRESHOLD);
+        log::info!(
+            "Audio is silent (RMS: {:.6}, threshold: {}), skipping transcription",
+            rms,
+            SILENCE_RMS_THRESHOLD
+        );
         return true;
     }
 
@@ -64,23 +70,38 @@ pub async fn transcribe_audio(
     _state: State<'_, Arc<AppState>>,
 ) -> Result<String, String> {
     // Get settings to check GPU preference
-    let settings = get_settings().await.map_err(|e| format!("Failed to get settings: {}", e))?;
+    let settings = get_settings()
+        .await
+        .map_err(|e| format!("Failed to get settings: {}", e))?;
     let use_gpu = settings.use_gpu;
 
-    log::info!("Transcribing audio file: {} with model: {} (GPU: {})", audio_path, model, use_gpu);
+    log::info!(
+        "Transcribing audio file: {} with model: {} (GPU: {})",
+        audio_path,
+        model,
+        use_gpu
+    );
 
     // Emit processing started
-    let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": true }));
+    let _ = app.emit(
+        "processing-status",
+        serde_json::json!({ "isProcessing": true }),
+    );
 
     // Get model path
-    let model_path = crate::models::downloader::ModelDownloader::new()
-        .get_model_path(&model);
+    let model_path = crate::models::downloader::ModelDownloader::new().get_model_path(&model);
 
     // Check if model exists
     if !model_path.exists() {
         log::error!("Model file not found at {:?}", model_path);
-        let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-        return Err(format!("Model '{}' not found. Please download it first.", model));
+        let _ = app.emit(
+            "processing-status",
+            serde_json::json!({ "isProcessing": false }),
+        );
+        return Err(format!(
+            "Model '{}' not found. Please download it first.",
+            model
+        ));
     }
 
     // Clone values for the blocking task
@@ -96,21 +117,34 @@ pub async fn transcribe_audio(
         let _ = tx.send(result);
     });
 
-    let text = rx.await
+    let text = rx
+        .await
         .map_err(|e| {
-            let _ = app_clone.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+            let _ = app_clone.emit(
+                "processing-status",
+                serde_json::json!({ "isProcessing": false }),
+            );
             format!("Channel receive error: {}", e)
         })?
         .map_err(|e| {
-            let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
+            let _ = app.emit(
+                "processing-status",
+                serde_json::json!({ "isProcessing": false }),
+            );
             e
         })?;
 
     log::info!("Transcription completed: {} characters", text.len());
 
     // Emit processing completed with transcription
-    let _ = app.emit("processing-status", serde_json::json!({ "isProcessing": false }));
-    let _ = app.emit("transcription-complete", serde_json::json!({ "text": text }));
+    let _ = app.emit(
+        "processing-status",
+        serde_json::json!({ "isProcessing": false }),
+    );
+    let _ = app.emit(
+        "transcription-complete",
+        serde_json::json!({ "text": text }),
+    );
 
     Ok(text)
 }
@@ -140,44 +174,47 @@ fn transcribe_blocking(
     // Get or load model from cache (stays loaded for 5 minutes after last use)
     // Pass the use_gpu setting - if it changes, the model will be reloaded
     let cache = get_model_cache();
-    let _guard = cache.get_or_load(&model, model_path, use_gpu)
+    let _guard = cache
+        .get_or_load(&model, model_path, use_gpu)
         .map_err(|e| format!("Failed to load model: {}", e))?;
 
     // Transcribe using cached model
-    let text = cache.with_context(|context| {
-        log::info!("Transcribing {} audio samples", audio_data.len());
+    let text = cache
+        .with_context(|context| {
+            log::info!("Transcribing {} audio samples", audio_data.len());
 
-        // Create transcription parameters
-        let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-        params.set_n_threads(4);
-        params.set_translate(false);
-        params.set_language(Some("en"));
-        params.set_print_special(false);
-        params.set_print_progress(false);
-        params.set_print_realtime(false);
-        params.set_print_timestamps(false);
+            // Create transcription parameters
+            let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+            params.set_n_threads(4);
+            params.set_translate(false);
+            params.set_language(Some("en"));
+            params.set_print_special(false);
+            params.set_print_progress(false);
+            params.set_print_realtime(false);
+            params.set_print_timestamps(false);
 
-        // Create state and run transcription
-        let mut state = context.create_state()?;
-        state.full(params, &audio_data)?;
+            // Create state and run transcription
+            let mut state = context.create_state()?;
+            state.full(params, &audio_data)?;
 
-        // Extract transcribed text
-        let num_segments = state.full_n_segments();
-        let mut result = String::new();
+            // Extract transcribed text
+            let num_segments = state.full_n_segments();
+            let mut result = String::new();
 
-        for i in 0..num_segments {
-            if let Some(segment) = state.get_segment(i) {
-                if let Ok(text) = segment.to_str() {
-                    result.push_str(text);
-                    if i < num_segments - 1 {
-                        result.push(' ');
+            for i in 0..num_segments {
+                if let Some(segment) = state.get_segment(i) {
+                    if let Ok(text) = segment.to_str() {
+                        result.push_str(text);
+                        if i < num_segments - 1 {
+                            result.push(' ');
+                        }
                     }
                 }
             }
-        }
 
-        Ok(result.trim().to_string())
-    }).map_err(|e: anyhow::Error| format!("Failed to transcribe audio: {}", e))?;
+            Ok(result.trim().to_string())
+        })
+        .map_err(|e: anyhow::Error| format!("Failed to transcribe audio: {}", e))?;
 
     Ok(text)
 }
@@ -288,11 +325,13 @@ mod tests {
         #[test]
         fn test_threshold_boundary() {
             // Just below threshold
-            let below_threshold: Vec<f32> = vec![SILENCE_RMS_THRESHOLD * 0.5; MIN_AUDIO_SAMPLES + 100];
+            let below_threshold: Vec<f32> =
+                vec![SILENCE_RMS_THRESHOLD * 0.5; MIN_AUDIO_SAMPLES + 100];
             assert!(is_audio_silent_or_too_short(&below_threshold));
 
             // Just above threshold
-            let above_threshold: Vec<f32> = vec![SILENCE_RMS_THRESHOLD * 2.0; MIN_AUDIO_SAMPLES + 100];
+            let above_threshold: Vec<f32> =
+                vec![SILENCE_RMS_THRESHOLD * 2.0; MIN_AUDIO_SAMPLES + 100];
             assert!(!is_audio_silent_or_too_short(&above_threshold));
         }
 

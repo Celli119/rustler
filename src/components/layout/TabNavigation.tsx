@@ -25,10 +25,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           variant="ghost"
           size="sm"
           onClick={() => onTabChange(tab.id)}
-          className={cn(
-            "gap-2",
-            activeTab === tab.id && "bg-background shadow-sm"
-          )}
+          className={cn("gap-2", activeTab === tab.id && "bg-background shadow-sm")}
         >
           {tab.icon}
           {tab.label}

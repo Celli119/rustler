@@ -95,7 +95,7 @@ export function WavyBackground() {
       centerY: number,
       radius: number,
       color: string,
-      waveOffset: number
+      waveOffset: number,
     ) => {
       ctx.beginPath();
       const points = 100;
@@ -123,8 +123,12 @@ export function WavyBackground() {
       // Create gradient for blob - fade to background color, not transparent
       const { r, g, b, a } = parseRgba(color);
       const gradient = ctx.createRadialGradient(
-        centerX, centerY, 0,
-        centerX, centerY, radius * 1.3
+        centerX,
+        centerY,
+        0,
+        centerX,
+        centerY,
+        radius * 1.3,
       );
       gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a})`);
       gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${a * 0.5})`);
@@ -135,14 +139,21 @@ export function WavyBackground() {
     };
 
     // Draw flowing wave lines
-    const drawWaves = (yBase: number, amplitude: number, frequency: number, color: string, offset: number) => {
+    const drawWaves = (
+      yBase: number,
+      amplitude: number,
+      frequency: number,
+      color: string,
+      offset: number,
+    ) => {
       ctx.beginPath();
       ctx.moveTo(0, yBase);
 
       for (let x = 0; x <= canvas.width; x += 2) {
-        const y = yBase +
-          Math.sin((x * frequency) + offset) * amplitude +
-          Math.sin((x * frequency * 0.5) + offset * 1.5) * (amplitude * 0.5);
+        const y =
+          yBase +
+          Math.sin(x * frequency + offset) * amplitude +
+          Math.sin(x * frequency * 0.5 + offset * 1.5) * (amplitude * 0.5);
         ctx.lineTo(x, y);
       }
 
@@ -172,7 +183,7 @@ export function WavyBackground() {
           blob.y * canvas.height + offsetY,
           blob.radius,
           blob.color,
-          time * blob.speed * 2
+          time * blob.speed * 2,
         );
       });
 
@@ -181,27 +192,9 @@ export function WavyBackground() {
         ? ["rgba(255, 80, 30, 0.6)", "rgba(255, 110, 50, 0.5)", "rgba(255, 140, 70, 0.4)"]
         : ["rgba(180, 83, 40, 0.25)", "rgba(184, 115, 51, 0.2)", "rgba(205, 127, 50, 0.15)"];
 
-      drawWaves(
-        canvas.height * 0.75,
-        40,
-        0.008,
-        waveColors[0],
-        time * 0.0008
-      );
-      drawWaves(
-        canvas.height * 0.82,
-        35,
-        0.01,
-        waveColors[1],
-        time * 0.001 + Math.PI
-      );
-      drawWaves(
-        canvas.height * 0.9,
-        30,
-        0.012,
-        waveColors[2],
-        time * 0.0012 + Math.PI / 2
-      );
+      drawWaves(canvas.height * 0.75, 40, 0.008, waveColors[0], time * 0.0008);
+      drawWaves(canvas.height * 0.82, 35, 0.01, waveColors[1], time * 0.001 + Math.PI);
+      drawWaves(canvas.height * 0.9, 30, 0.012, waveColors[2], time * 0.0012 + Math.PI / 2);
 
       animationId = requestAnimationFrame(animate);
     };

@@ -1,6 +1,6 @@
-use anyhow::{Result, Context, anyhow};
+use anyhow::{anyhow, Context, Result};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use std::sync::mpsc::{self, Sender, Receiver};
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 
@@ -23,17 +23,24 @@ impl RecordingHandle {
         log::info!("Stopping audio recording");
 
         // Send stop command
-        self.command_tx.send(RecordingCommand::Stop)
+        self.command_tx
+            .send(RecordingCommand::Stop)
             .map_err(|_| anyhow!("Failed to send stop command"))?;
 
         // Wait for the thread to finish and get the samples
-        let thread_handle = self.thread_handle.take()
+        let thread_handle = self
+            .thread_handle
+            .take()
             .context("Recording thread already stopped")?;
 
-        let samples = thread_handle.join()
+        let samples = thread_handle
+            .join()
             .map_err(|_| anyhow!("Recording thread panicked"))??;
 
-        log::info!("Audio recording stopped, {} samples captured", samples.len());
+        log::info!(
+            "Audio recording stopped, {} samples captured",
+            samples.len()
+        );
 
         Ok(samples)
     }
@@ -52,7 +59,8 @@ impl AudioRecorder {
         log::info!("Starting audio recording");
 
         // Create channel for commands
-        let (command_tx, command_rx): (Sender<RecordingCommand>, Receiver<RecordingCommand>) = mpsc::channel();
+        let (command_tx, command_rx): (Sender<RecordingCommand>, Receiver<RecordingCommand>) =
+            mpsc::channel();
 
         // Spawn recording thread
         let thread_handle = thread::spawn(move || -> Result<Vec<f32>> {
@@ -60,13 +68,18 @@ impl AudioRecorder {
             let host = cpal::default_host();
 
             // Get default input device
-            let device = host.default_input_device()
+            let device = host
+                .default_input_device()
                 .context("No input device available")?;
 
-            log::info!("Using input device: {}", device.name().unwrap_or_else(|_| "Unknown".to_string()));
+            log::info!(
+                "Using input device: {}",
+                device.name().unwrap_or_else(|_| "Unknown".to_string())
+            );
 
             // Get default input config to validate device supports input
-            let _supported_config = device.default_input_config()
+            let _supported_config = device
+                .default_input_config()
                 .context("Failed to get default input config")?;
 
             // Create StreamConfig (16kHz mono for Whisper)
@@ -118,7 +131,6 @@ impl AudioRecorder {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,7 +176,11 @@ mod tests {
 
         // Start recording
         let handle = AudioRecorder::start_recording();
-        assert!(handle.is_ok(), "Failed to start recording: {:?}", handle.err());
+        assert!(
+            handle.is_ok(),
+            "Failed to start recording: {:?}",
+            handle.err()
+        );
 
         let handle = handle.unwrap();
 
@@ -173,7 +189,11 @@ mod tests {
 
         // Stop recording
         let samples = handle.stop();
-        assert!(samples.is_ok(), "Failed to stop recording: {:?}", samples.err());
+        assert!(
+            samples.is_ok(),
+            "Failed to stop recording: {:?}",
+            samples.err()
+        );
 
         // We should have captured some samples (may be empty in short time)
         let samples = samples.unwrap();
@@ -272,9 +292,7 @@ mod tests {
 
         #[test]
         fn test_thread_spawn_and_join() {
-            let handle = thread::spawn(|| -> anyhow::Result<Vec<f32>> {
-                Ok(vec![0.1, 0.2, 0.3])
-            });
+            let handle = thread::spawn(|| -> anyhow::Result<Vec<f32>> { Ok(vec![0.1, 0.2, 0.3]) });
 
             let result = handle.join();
             assert!(result.is_ok());

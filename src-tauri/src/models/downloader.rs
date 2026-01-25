@@ -1,16 +1,34 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use futures_util::StreamExt;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// HuggingFace URLs for Whisper models
 const WHISPER_MODELS: &[(&str, &str)] = &[
-    ("tiny", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin"),
-    ("base", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"),
-    ("small", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin"),
-    ("medium", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin"),
-    ("large", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin"),
-    ("turbo", "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin"),
+    (
+        "tiny",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin",
+    ),
+    (
+        "base",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin",
+    ),
+    (
+        "small",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",
+    ),
+    (
+        "medium",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin",
+    ),
+    (
+        "large",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin",
+    ),
+    (
+        "turbo",
+        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin",
+    ),
 ];
 
 /// Manages downloading and storing Whisper models
@@ -65,8 +83,7 @@ impl ModelDownloader {
     {
         log::info!("Starting download for model: {}", model_id);
 
-        let url = self.model_urls.get(model_id)
-            .context("Unknown model ID")?;
+        let url = self.model_urls.get(model_id).context("Unknown model ID")?;
 
         let model_path = self.get_model_path(model_id);
 
@@ -100,8 +117,7 @@ impl ModelDownloader {
         }
 
         // Write to file
-        std::fs::write(&model_path, file_bytes)
-            .context("Failed to write model file")?;
+        std::fs::write(&model_path, file_bytes).context("Failed to write model file")?;
 
         log::info!("Model downloaded successfully: {:?}", model_path);
 
@@ -144,7 +160,6 @@ impl Default for ModelDownloader {
         Self::new()
     }
 }
-
 
 #[cfg(test)]
 mod tests {

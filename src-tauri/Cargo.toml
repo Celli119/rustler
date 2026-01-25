@@ -49,4 +49,8 @@ gtk = "0.18"
 gdk = "0.18"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows = { version = "0.58", features = ["Win32_UI_Input_KeyboardAndMouse", "Win32_System_DataExchange", "Win32_Foundation"] }
+windows = { version = "0.58", features = [
+  "Win32_UI_Input_KeyboardAndMouse",
+  "Win32_System_DataExchange",
+  "Win32_Foundation",
+] }

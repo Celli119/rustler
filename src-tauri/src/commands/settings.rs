@@ -37,8 +37,8 @@ impl Default for Settings {
 
 /// Gets the path to the settings file
 fn get_settings_path() -> Result<PathBuf, String> {
-    let config_dir = dirs::config_dir()
-        .ok_or_else(|| "Failed to get config directory".to_string())?;
+    let config_dir =
+        dirs::config_dir().ok_or_else(|| "Failed to get config directory".to_string())?;
 
     let app_config_dir = config_dir.join("rustler");
 
@@ -66,8 +66,8 @@ fn load_settings_from_disk() -> Result<Settings, String> {
         .map_err(|e| format!("Failed to read settings file: {}", e))?;
 
     // Parse JSON
-    let settings: Settings = serde_json::from_str(&contents)
-        .map_err(|e| format!("Failed to parse settings: {}", e))?;
+    let settings: Settings =
+        serde_json::from_str(&contents).map_err(|e| format!("Failed to parse settings: {}", e))?;
 
     Ok(settings)
 }
@@ -135,7 +135,6 @@ pub async fn save_settings(settings: Settings) -> Result<(), String> {
     Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -144,7 +143,8 @@ mod tests {
 
     /// Helper to create a temporary test directory for settings
     fn create_test_config_dir() -> PathBuf {
-        let test_dir = std::env::temp_dir().join(format!("rustler_settings_test_{}", std::process::id()));
+        let test_dir =
+            std::env::temp_dir().join(format!("rustler_settings_test_{}", std::process::id()));
         if test_dir.exists() {
             fs::remove_dir_all(&test_dir).ok();
         }
@@ -185,7 +185,10 @@ mod tests {
         assert_eq!(cloned.model, settings.model);
         assert_eq!(cloned.use_gpu, settings.use_gpu);
         assert_eq!(cloned.language, settings.language);
-        assert_eq!(cloned.show_overlay_only_during_recording, settings.show_overlay_only_during_recording);
+        assert_eq!(
+            cloned.show_overlay_only_during_recording,
+            settings.show_overlay_only_during_recording
+        );
     }
 
     #[test]
@@ -271,17 +274,15 @@ mod tests {
         pub fn write_settings_to_path(path: &Path, settings: &Settings) -> Result<(), String> {
             let json = serde_json::to_string_pretty(settings)
                 .map_err(|e| format!("Failed to serialize: {}", e))?;
-            fs::write(path, json)
-                .map_err(|e| format!("Failed to write: {}", e))?;
+            fs::write(path, json).map_err(|e| format!("Failed to write: {}", e))?;
             Ok(())
         }
 
         /// Read settings from a specific path for testing
         pub fn read_settings_from_path(path: &Path) -> Result<Settings, String> {
-            let contents = fs::read_to_string(path)
-                .map_err(|e| format!("Failed to read: {}", e))?;
-            serde_json::from_str(&contents)
-                .map_err(|e| format!("Failed to parse: {}", e))
+            let contents =
+                fs::read_to_string(path).map_err(|e| format!("Failed to read: {}", e))?;
+            serde_json::from_str(&contents).map_err(|e| format!("Failed to parse: {}", e))
         }
     }
 
