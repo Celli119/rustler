@@ -8,9 +8,100 @@ if (typeof document !== "undefined") {
   document.documentElement.style.background = "transparent";
 }
 
+
+/**
+ * Animated dune icon component using SVG SMIL for path morphing
+ */
+function DuneIcon({ isAnimating }: { isAnimating: boolean }) {
+  return (
+    <svg className="w-full h-full" viewBox="0 0 90 90" fill="none">
+      <defs>
+        <linearGradient id="duneGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#cd7f32" />
+          <stop offset="100%" stopColor="#b45328" />
+        </linearGradient>
+        <linearGradient id="duneGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#b45328" />
+          <stop offset="100%" stopColor="#8b4513" />
+        </linearGradient>
+        <linearGradient id="duneGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b4513" />
+          <stop offset="100%" stopColor="#6b3410" />
+        </linearGradient>
+      </defs>
+
+      {/* Back dune layer */}
+      <path
+        d="M 0 50 Q 15 35, 30 42 Q 50 52, 70 38 Q 85 28, 90 35 L 90 90 L 0 90 Z"
+        fill="url(#duneGradient1)"
+      >
+        {isAnimating && (
+          <animate
+            attributeName="d"
+            dur="3s"
+            repeatCount="indefinite"
+            values="
+              M 0 50 Q 15 35, 30 42 Q 50 52, 70 38 Q 85 28, 90 35 L 90 90 L 0 90 Z;
+              M 0 45 Q 20 38, 35 48 Q 55 42, 65 35 Q 80 42, 90 38 L 90 90 L 0 90 Z;
+              M 0 48 Q 18 42, 32 38 Q 48 48, 68 42 Q 82 35, 90 42 L 90 90 L 0 90 Z;
+              M 0 50 Q 15 35, 30 42 Q 50 52, 70 38 Q 85 28, 90 35 L 90 90 L 0 90 Z
+            "
+            calcMode="spline"
+            keySplines="0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1"
+          />
+        )}
+      </path>
+
+      {/* Middle dune layer */}
+      <path
+        d="M 0 60 Q 20 50, 40 55 Q 60 62, 80 52 Q 88 48, 90 52 L 90 90 L 0 90 Z"
+        fill="url(#duneGradient2)"
+      >
+        {isAnimating && (
+          <animate
+            attributeName="d"
+            dur="2.5s"
+            repeatCount="indefinite"
+            values="
+              M 0 60 Q 20 50, 40 55 Q 60 62, 80 52 Q 88 48, 90 52 L 90 90 L 0 90 Z;
+              M 0 58 Q 25 55, 45 50 Q 58 58, 75 55 Q 85 50, 90 55 L 90 90 L 0 90 Z;
+              M 0 62 Q 18 48, 38 58 Q 62 55, 78 48 Q 86 55, 90 50 L 90 90 L 0 90 Z;
+              M 0 60 Q 20 50, 40 55 Q 60 62, 80 52 Q 88 48, 90 52 L 90 90 L 0 90 Z
+            "
+            calcMode="spline"
+            keySplines="0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1"
+          />
+        )}
+      </path>
+
+      {/* Front dune layer */}
+      <path
+        d="M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z"
+        fill="url(#duneGradient3)"
+      >
+        {isAnimating && (
+          <animate
+            attributeName="d"
+            dur="2s"
+            repeatCount="indefinite"
+            values="
+              M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z;
+              M 0 70 Q 22 72, 42 66 Q 62 72, 90 70 L 90 90 L 0 90 Z;
+              M 0 74 Q 28 68, 48 74 Q 68 68, 90 72 L 90 90 L 0 90 Z;
+              M 0 72 Q 25 65, 45 70 Q 65 76, 90 68 L 90 90 L 0 90 Z
+            "
+            calcMode="spline"
+            keySplines="0.4 0 0.6 1; 0.4 0 0.6 1; 0.4 0 0.6 1"
+          />
+        )}
+      </path>
+    </svg>
+  );
+}
+
 /**
  * Floating overlay button that lives in a separate transparent window.
- * This button allows users to start/stop recording from anywhere on their screen.
+ * Features a smooth animated dune icon with rusty copper colors.
  */
 export function OverlayButton() {
   const { state, toggleRecording } = useRecordingState();
@@ -39,43 +130,18 @@ export function OverlayButton() {
   };
 
   const handleClick = async () => {
-    // Only trigger if not dragging
     if (!isDragging) {
       await toggleRecording();
     }
   };
 
-  // Get button styling based on state
-  const getStateStyles = () => {
-    switch (state) {
-      case "recording":
-        return {
-          bg: "bg-red-500",
-          shadow: "shadow-red-500/50",
-          animate: "animate-pulse",
-        };
-      case "processing":
-        return {
-          bg: "bg-blue-500",
-          shadow: "shadow-blue-500/50",
-          animate: "",
-        };
-      case "done":
-        return {
-          bg: "bg-green-500",
-          shadow: "shadow-green-500/50",
-          animate: "",
-        };
-      default:
-        return {
-          bg: "bg-gray-800 hover:bg-gray-700",
-          shadow: "shadow-gray-800/50",
-          animate: "",
-        };
-    }
-  };
+  const isRecording = state === "recording";
+  const isProcessing = state === "processing";
 
-  const styles = getStateStyles();
+  // Shadow color based on state
+  const shadowColor = isRecording
+    ? "rgba(205, 127, 50, 0.7)"
+    : "rgba(180, 83, 40, 0.5)";
 
   return (
     <div
@@ -88,63 +154,25 @@ export function OverlayButton() {
       <button
         onClick={handleClick}
         onMouseDown={handleMouseDown}
-        disabled={state === "processing"}
+        disabled={isProcessing}
         className={`
-          w-14 h-14
+          relative
+          w-[70px] h-[70px]
           rounded-full
-          ${styles.bg}
-          ${styles.animate}
-          shadow-lg ${styles.shadow}
-          flex items-center justify-center
-          text-white
-          transition-all duration-200
+          overflow-hidden
+          transition-all duration-300
           cursor-pointer
-          border-2 border-white/20
           disabled:cursor-not-allowed
           hover:scale-110
           active:scale-95
+          ${isRecording ? "ring-2 ring-orange-400" : ""}
         `}
+        style={{
+          boxShadow: `0 4px 20px ${shadowColor}`,
+          background: "linear-gradient(135deg, #c9935a 0%, #d4984f 100%)",
+        }}
       >
-        {state === "processing" ? (
-          <svg className="w-7 h-7 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-        ) : state === "recording" ? (
-          <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="6" y="6" width="12" height="12" rx="2" />
-          </svg>
-        ) : state === "done" ? (
-          <svg
-            className="w-7 h-7"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        ) : (
-          <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-          </svg>
-        )}
+        <DuneIcon isAnimating={isRecording} />
       </button>
     </div>
   );
