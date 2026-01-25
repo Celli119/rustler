@@ -2,7 +2,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[cfg(target_os = "linux")]
-use crate::hotkey::wayland::WaylandHotkeyManager;
+use crate::hotkey::wayland::{WaylandHotkeyManager, reset_portal_state};
 #[cfg(target_os = "linux")]
 use std::sync::OnceLock;
 
@@ -116,6 +116,27 @@ fn register_hotkey_native(app: AppHandle, shortcut: String) -> Result<(), String
 
     log::info!("Native hotkey registered successfully: {}", shortcut);
     Ok(())
+}
+
+/// Check if we're running on Wayland (exposed to frontend)
+#[tauri::command]
+pub fn is_wayland_session() -> bool {
+    is_wayland()
+}
+
+/// Reset Wayland portal state and re-register hotkey
+/// This forces the xdg-desktop-portal dialog to appear again
+#[tauri::command]
+pub async fn reset_wayland_hotkey(app: AppHandle, shortcut: String) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    if is_wayland() {
+        log::info!("Resetting Wayland portal state and re-registering hotkey");
+        reset_portal_state();
+        return register_hotkey_wayland(app, shortcut).await;
+    }
+
+    // On non-Wayland, just do normal registration
+    register_hotkey(app, shortcut).await
 }
 
 /// Unregisters all global hotkeys

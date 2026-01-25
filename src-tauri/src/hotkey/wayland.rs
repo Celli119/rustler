@@ -19,6 +19,13 @@ static PORTAL_UNAVAILABLE: AtomicBool = AtomicBool::new(false);
 /// Flag to prevent concurrent registration attempts
 static REGISTRATION_IN_PROGRESS: AtomicBool = AtomicBool::new(false);
 
+/// Reset the portal unavailable flag to allow re-trying registration
+/// This should be called when the user explicitly wants to re-configure the hotkey
+pub fn reset_portal_state() {
+    PORTAL_UNAVAILABLE.store(false, Ordering::Relaxed);
+    log::info!("Wayland: Portal unavailable flag reset, will retry on next registration");
+}
+
 /// Manages global shortcuts on Wayland via xdg-desktop-portal
 pub struct WaylandHotkeyManager {
     /// Channel to send shutdown signal to the listener task
@@ -216,12 +223,34 @@ impl WaylandHotkeyManager {
         self.stop_listener();
     }
 
-    /// Check if we're running on Wayland
+    /// Check if we're running on Wayland or XWayland
+    /// On Wayland sessions (including XWayland), we need to use the portal for global shortcuts
     pub fn is_wayland() -> bool {
-        std::env::var("WAYLAND_DISPLAY").is_ok()
-            || std::env::var("XDG_SESSION_TYPE")
-                .map(|v| v == "wayland")
-                .unwrap_or(false)
+        // Direct Wayland connection
+        let has_wayland_display = std::env::var("WAYLAND_DISPLAY").is_ok();
+
+        // Session type is Wayland (covers both native Wayland and XWayland apps)
+        let is_wayland_session = std::env::var("XDG_SESSION_TYPE")
+            .map(|v| v == "wayland")
+            .unwrap_or(false);
+
+        // Check for common Wayland compositors via XDG_CURRENT_DESKTOP
+        let is_wayland_desktop = std::env::var("XDG_CURRENT_DESKTOP")
+            .map(|v| {
+                let v = v.to_lowercase();
+                v.contains("gnome") || v.contains("kde") || v.contains("sway") ||
+                v.contains("hyprland") || v.contains("wlroots")
+            })
+            .unwrap_or(false);
+
+        let result = has_wayland_display || is_wayland_session || (is_wayland_desktop && !std::env::var("DISPLAY").is_ok());
+
+        log::info!(
+            "Wayland detection: WAYLAND_DISPLAY={}, XDG_SESSION_TYPE=wayland: {}, wayland_desktop: {} -> {}",
+            has_wayland_display, is_wayland_session, is_wayland_desktop, result
+        );
+
+        result
     }
 }
 

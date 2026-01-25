@@ -74,6 +74,14 @@ export async function registerHotkey(shortcut: string): Promise<void> {
   return invoke("register_hotkey", { shortcut });
 }
 
+export async function isWaylandSession(): Promise<boolean> {
+  return invoke("is_wayland_session");
+}
+
+export async function resetWaylandHotkey(shortcut: string): Promise<void> {
+  return invoke("reset_wayland_hotkey", { shortcut });
+}
+
 export async function pasteText(text: string): Promise<void> {
   return invoke("paste_text", { text });
 }

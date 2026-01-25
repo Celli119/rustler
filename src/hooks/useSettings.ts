@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useAppStore } from "@/stores/appStore";
-import { getSettings, saveSettings, registerHotkey } from "@/lib/tauri";
+import { getSettings, saveSettings, registerHotkey, isWaylandSession, resetWaylandHotkey } from "@/lib/tauri";
 import type { Settings } from "@/lib/tauri";
 
 export function useSettings() {
@@ -52,7 +52,16 @@ export function useSettings() {
     async (hotkey: string) => {
       try {
         hotkeyRegisteredRef.current = true;
-        await registerHotkey(hotkey);
+
+        // On Wayland, use resetWaylandHotkey to force the dialog to appear
+        const isWayland = await isWaylandSession();
+        if (isWayland) {
+          console.log("Wayland detected, using resetWaylandHotkey to show portal dialog");
+          await resetWaylandHotkey(hotkey);
+        } else {
+          await registerHotkey(hotkey);
+        }
+
         await updateSettings({ hotkey });
       } catch (error) {
         console.error("Failed to update hotkey:", error);

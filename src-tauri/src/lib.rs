@@ -141,6 +141,8 @@ pub fn run() {
             // Hotkey commands
             commands::hotkey::register_hotkey,
             commands::hotkey::unregister_hotkeys,
+            commands::hotkey::is_wayland_session,
+            commands::hotkey::reset_wayland_hotkey,
             // Clipboard commands
             commands::clipboard::paste_text,
             // Overlay commands
