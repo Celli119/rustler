@@ -18,15 +18,16 @@ export function useSettings() {
         setSettings(loadedSettings);
 
         // Auto-register hotkey on startup (only once globally)
+        // On Wayland, this may show a system dialog - run in background to avoid blocking UI
         if (loadedSettings.hotkey && !hotkeyRegistered) {
           hotkeyRegistered = true;
-          try {
-            await registerHotkey(loadedSettings.hotkey);
-            console.log("Hotkey auto-registered:", loadedSettings.hotkey);
-          } catch (error) {
-            console.error("Failed to auto-register hotkey:", error);
-            hotkeyRegistered = false;
-          }
+          // Fire and forget - don't block UI for hotkey registration
+          registerHotkey(loadedSettings.hotkey)
+            .then(() => console.log("Hotkey auto-registered:", loadedSettings.hotkey))
+            .catch((error) => {
+              console.error("Failed to auto-register hotkey:", error);
+              hotkeyRegistered = false;
+            });
         }
       } catch (error) {
         console.error("Failed to load settings:", error);
