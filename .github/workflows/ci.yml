@@ -37,7 +37,8 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
-          method: local
+          method: network
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
 
       - name: Install Linux dependencies
         run: |
@@ -85,7 +86,8 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
-          method: local
+          method: network
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
 
       - name: Install Linux dependencies
         run: |
@@ -149,7 +151,8 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
-          method: local
+          method: network
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "thrust"]'
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
