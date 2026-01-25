@@ -31,7 +31,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install CUDA toolkit
-        uses: Jimver/cuda-toolkit@v0.2.19
+        uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
           method: network
@@ -75,7 +75,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install CUDA toolkit
-        uses: Jimver/cuda-toolkit@v0.2.19
+        uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
           method: network
@@ -131,7 +131,7 @@ jobs:
 
       - name: Install CUDA toolkit (Linux)
         if: matrix.os == 'ubuntu-latest'
-        uses: Jimver/cuda-toolkit@v0.2.19
+        uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
           method: network
@@ -139,7 +139,7 @@ jobs:
 
       - name: Install CUDA toolkit (Windows)
         if: matrix.os == 'windows-latest'
-        uses: Jimver/cuda-toolkit@v0.2.19
+        uses: Jimver/cuda-toolkit@v0.2.22
         with:
           cuda: "12.6.3"
           method: network
