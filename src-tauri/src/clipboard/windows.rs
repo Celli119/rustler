@@ -1,17 +1,20 @@
 use anyhow::{Context, Result};
-use windows::Win32::Foundation::{
-    GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE, HGLOBAL, HWND,
-};
+use windows::Win32::Foundation::HWND;
 use windows::Win32::System::DataExchange::{
     CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
 };
-use windows::Win32::System::Memory::GLOBAL_ALLOC_FLAGS;
+const CF_UNICODETEXT: u32 = 13;
+use windows::Win32::System::Memory::{
+    GlobalAlloc, GlobalLock, GlobalUnlock,
+    GMEM_MOVEABLE,
+};
+use windows::Win32::Foundation::HANDLE;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
     VIRTUAL_KEY, VK_CONTROL, VK_V,
 };
 
-const CF_UNICODETEXT: u32 = 13;
+// Removed as it's now imported from windows::Win32::System::DataExchange
 
 /// Pastes text on Windows using the Win32 API
 ///
@@ -39,7 +42,7 @@ pub fn paste_text(text: &str) -> Result<()> {
 /// Sets text to the Windows clipboard
 unsafe fn set_clipboard_text(text: &str) -> Result<()> {
     // Open clipboard
-    OpenClipboard(HWND(0)).context("Failed to open clipboard")?;
+    OpenClipboard(HWND(std::ptr::null_mut())).context("Failed to open clipboard")?;
 
     // Empty clipboard
     EmptyClipboard().context("Failed to empty clipboard")?;
@@ -54,18 +57,16 @@ unsafe fn set_clipboard_text(text: &str) -> Result<()> {
     // Lock memory and copy text
     let locked = GlobalLock(hglob);
     if locked.is_null() {
-        CloseClipboard().ok();
+        let _ = CloseClipboard();
         return Err(anyhow::anyhow!("Failed to lock global memory"));
     }
 
     std::ptr::copy_nonoverlapping(wide.as_ptr(), locked as *mut u16, wide.len());
+    let _ = GlobalUnlock(hglob);
 
-    GlobalUnlock(hglob).ok();
+    // Set clipboard data - convert HGLOBAL to HANDLE
+    SetClipboardData(CF_UNICODETEXT, HANDLE(hglob.0)).context("Failed to set clipboard data")?;
 
-    // Set clipboard data
-    SetClipboardData(CF_UNICODETEXT, HGLOBAL(hglob.0)).context("Failed to set clipboard data")?;
-
-    // Close clipboard
     CloseClipboard().context("Failed to close clipboard")?;
 
     Ok(())
