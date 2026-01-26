@@ -169,7 +169,14 @@ mod tests {
 
     /// Helper to create a temporary test directory
     fn create_test_dir() -> PathBuf {
-        let test_dir = std::env::temp_dir().join(format!("rustler_test_{}", std::process::id()));
+        // Use a combination of current time and random number for uniqueness
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        let test_dir = std::env::temp_dir()
+            .join(format!("rustler_test_{}_{}", nanos, std::process::id()));
         if test_dir.exists() {
             fs::remove_dir_all(&test_dir).ok();
         }
@@ -260,9 +267,8 @@ mod tests {
 
         // Create a fake model file, ensuring parent directory exists
         let model_path = downloader.get_model_path("tiny");
-        if let Some(parent) = model_path.parent() {
-            fs::create_dir_all(parent).unwrap();
-        }
+        // Ensure the models directory exists
+        fs::create_dir_all(&downloader.models_dir).unwrap();
         fs::write(&model_path, b"fake model data").unwrap();
 
         assert!(downloader.is_downloaded("tiny"));
@@ -286,9 +292,8 @@ mod tests {
 
         // Create a fake model file, ensuring parent directory exists
         let model_path = downloader.get_model_path("tiny");
-        if let Some(parent) = model_path.parent() {
-            fs::create_dir_all(parent).unwrap();
-        }
+        // Ensure the models directory exists
+        fs::create_dir_all(&downloader.models_dir).unwrap();
         let expected_content = b"existing model data";
         fs::write(&model_path, expected_content).unwrap();
 
