@@ -4,11 +4,8 @@ use windows::Win32::System::DataExchange::{
     CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
 };
 const CF_UNICODETEXT: u32 = 13;
-use windows::Win32::System::Memory::{
-    GlobalAlloc, GlobalLock, GlobalUnlock,
-    GMEM_MOVEABLE,
-};
 use windows::Win32::Foundation::HANDLE;
+use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP,
     VIRTUAL_KEY, VK_CONTROL, VK_V,

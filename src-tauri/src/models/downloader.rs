@@ -175,8 +175,8 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_nanos())
             .unwrap_or(0);
-        let test_dir = std::env::temp_dir()
-            .join(format!("rustler_test_{}_{}", nanos, std::process::id()));
+        let test_dir =
+            std::env::temp_dir().join(format!("rustler_test_{}_{}", nanos, std::process::id()));
         if test_dir.exists() {
             fs::remove_dir_all(&test_dir).ok();
         }
