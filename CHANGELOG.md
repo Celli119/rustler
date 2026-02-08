@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/Celli119/rustler/compare/v1.0.0...v1.0.1) (2026-02-08)
+
+
+### Bug Fixes
+
+* use semantic-release-action to properly publish release bundles ([c0ecd14](https://github.com/Celli119/rustler/commit/c0ecd14924ca67c45e0673bfa326dea3c4f18b02))
+
 # 1.0.0 (2026-02-08)
 
 
