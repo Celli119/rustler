@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/Celli119/rustler/compare/v1.0.1...v1.0.2) (2026-02-08)
+
+
+### Bug Fixes
+
+* gate release on CI success and fix changelog formatting ([286a46f](https://github.com/Celli119/rustler/commit/286a46f332721dbd964a3e2763fe94a09843ff55))
+
 ## [1.0.1](https://github.com/Celli119/rustler/compare/v1.0.0...v1.0.1) (2026-02-08)
 
 ### Bug Fixes
