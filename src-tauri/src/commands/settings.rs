@@ -18,9 +18,6 @@ pub struct Settings {
     pub use_gpu: bool,
     /// Language code for transcription (e.g., "en", "es")
     pub language: String,
-    /// Whether to show the overlay button only during recording
-    #[serde(default)]
-    pub show_overlay_only_during_recording: bool,
 }
 
 impl Default for Settings {
@@ -30,7 +27,6 @@ impl Default for Settings {
             model: "base".to_string(),
             use_gpu: false,
             language: "en".to_string(),
-            show_overlay_only_during_recording: false,
         }
     }
 }
@@ -176,7 +172,6 @@ mod tests {
             model: "large".to_string(),
             use_gpu: true,
             language: "es".to_string(),
-            show_overlay_only_during_recording: true,
         };
 
         let cloned = settings.clone();
@@ -185,10 +180,6 @@ mod tests {
         assert_eq!(cloned.model, settings.model);
         assert_eq!(cloned.use_gpu, settings.use_gpu);
         assert_eq!(cloned.language, settings.language);
-        assert_eq!(
-            cloned.show_overlay_only_during_recording,
-            settings.show_overlay_only_during_recording
-        );
     }
 
     #[test]
@@ -208,7 +199,6 @@ mod tests {
             model: "medium".to_string(),
             use_gpu: true,
             language: "fr".to_string(),
-            show_overlay_only_during_recording: false,
         };
 
         // Serialize to JSON
@@ -232,8 +222,7 @@ mod tests {
             "hotkey": "Alt+S",
             "model": "tiny",
             "useGpu": false,
-            "language": "de",
-            "showOverlayOnlyDuringRecording": false
+            "language": "de"
         }"#;
 
         let settings: Settings = serde_json::from_str(json).unwrap();
@@ -242,7 +231,6 @@ mod tests {
         assert_eq!(settings.model, "tiny");
         assert!(!settings.use_gpu);
         assert_eq!(settings.language, "de");
-        assert!(!settings.show_overlay_only_during_recording);
     }
 
     #[test]
@@ -296,7 +284,6 @@ mod tests {
             model: "small".to_string(),
             use_gpu: true,
             language: "ja".to_string(),
-            show_overlay_only_during_recording: true,
         };
 
         // Write settings

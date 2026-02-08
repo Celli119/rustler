@@ -25,6 +25,7 @@ tauri = { version = "2", features = ["tray-icon", "image-png"] }
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-log = "2"
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+tauri-plugin-notification = "2"
 tauri-plugin-process = "2"
 whisper-rs = "0.15"
 cpal = "0.15"

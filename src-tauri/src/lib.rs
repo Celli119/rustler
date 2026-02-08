@@ -52,6 +52,9 @@ pub fn run() {
             // Setup process plugin for restart functionality
             app.handle().plugin(tauri_plugin_process::init())?;
 
+            // Setup notification plugin for recording notifications
+            app.handle().plugin(tauri_plugin_notification::init())?;
+
             // Initialize app state
             app.manage(Arc::new(AppState::default()));
 
@@ -73,7 +76,7 @@ pub fn run() {
                 // Create an empty menu (required on Linux for the icon to be visible)
                 let menu = MenuBuilder::new(app).build()?;
 
-                let _tray = TrayIconBuilder::new()
+                let _tray = TrayIconBuilder::with_id("main-tray")
                     .icon(tray_icon)
                     .menu(&menu)
                     .tooltip("Rustler")
@@ -88,62 +91,11 @@ pub fn run() {
                     .build(app)?;
             }
 
-            // Configure overlay window
-            if let Some(overlay) = app.get_webview_window("overlay") {
-                // Set GTK window properties on Linux for proper always-on-top behavior
-                #[cfg(target_os = "linux")]
-                {
-                    use gtk::prelude::GtkWindowExt;
-
-                    if let Ok(gtk_window) = overlay.gtk_window() {
-                        // Keep above other windows (works on X11)
-                        gtk_window.set_keep_above(true);
-                        // Make it stick to all workspaces
-                        gtk_window.stick();
-                        log::info!("Set GTK window hints for overlay (keep_above, stick)");
-                    }
-                }
-
-                // Dynamically detect monitors and position on the leftmost one
-                // TODO: Add setting to choose which monitor to use
-                if let Ok(monitors) = overlay.available_monitors() {
-                    // Find the leftmost monitor (smallest x position)
-                    if let Some(target_mon) = monitors.iter().min_by_key(|m| m.position().x) {
-                        let size = target_mon.size();
-                        let pos = target_mon.position();
-                        // Position at bottom-right with margin
-                        let pos_x = pos.x + size.width as i32 - 200; // 200px from right edge
-                        let pos_y = pos.y + size.height as i32 - 150; // 150px from bottom
-                        let _ =
-                            overlay.set_position(tauri::PhysicalPosition { x: pos_x, y: pos_y });
-                        log::info!(
-                            "Positioned overlay at ({}, {}) on monitor {}x{} at ({}, {})",
-                            pos_x,
-                            pos_y,
-                            size.width,
-                            size.height,
-                            pos.x,
-                            pos.y
-                        );
-                    } else {
-                        // Fallback if no monitors detected
-                        let _ = overlay.set_position(tauri::PhysicalPosition { x: 100, y: 100 });
-                        log::warn!("No monitors detected, using fallback position");
-                    }
-                }
-
-                // Show the overlay window (content visibility is controlled by the frontend)
-                let _ = overlay.show();
-                log::info!("Overlay window shown on startup");
-            }
-
             Ok(())
         })
         .on_window_event(|window, event| {
-            // When main window is closed, close the entire app (including overlay)
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { .. } = event {
-                    // Exit the app when main window is closed
                     window.app_handle().exit(0);
                 }
             }
@@ -169,12 +121,6 @@ pub fn run() {
             commands::hotkey::reset_wayland_hotkey,
             // Clipboard commands
             commands::clipboard::paste_text,
-            // Overlay commands
-            commands::overlay::set_overlay_ignore_cursor_events,
-            commands::overlay::move_overlay_window,
-            commands::overlay::get_overlay_position,
-            commands::overlay::show_overlay,
-            commands::overlay::hide_overlay,
             // History commands
             commands::history::get_history,
             commands::history::add_history,

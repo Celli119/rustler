@@ -1,4 +1,3 @@
-export { PillOverlay } from "./PillOverlay";
 export { FloatingRecordButton } from "./FloatingRecordButton";
 export { ModelSelector } from "./ModelSelector";
 export { HotkeyConfig } from "./HotkeyConfig";

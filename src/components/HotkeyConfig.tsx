@@ -32,7 +32,9 @@ export function HotkeyConfig() {
       await updateHotkey(hotkey);
       setError(null);
     } catch (err) {
-      setError("Failed to register hotkey. Please try a different combination.");
+      const message =
+        err instanceof Error ? err.message : typeof err === "string" ? err : "Unknown error";
+      setError(`Failed to register hotkey: ${message}`);
       console.error(err);
     }
   };

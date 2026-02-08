@@ -1,6 +1,24 @@
 use crate::{audio::recorder::AudioRecorder, AppState};
 use std::sync::Arc;
-use tauri::{AppHandle, Emitter, State};
+use tauri::{image::Image, AppHandle, Emitter, State};
+use tauri_plugin_notification::NotificationExt;
+
+/// Tray icon ID used to look up the tray for icon swaps
+const TRAY_ID: &str = "main-tray";
+
+/// Swap the system tray icon to indicate recording state
+fn set_tray_recording(app: &AppHandle, recording: bool) {
+    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+        let icon_bytes: &[u8] = if recording {
+            include_bytes!("../../icons/32x32-recording.png")
+        } else {
+            include_bytes!("../../icons/32x32.png")
+        };
+        if let Ok(icon) = Image::from_bytes(icon_bytes) {
+            let _ = tray.set_icon(Some(icon));
+        }
+    }
+}
 
 /// Starts audio recording
 ///
@@ -29,6 +47,17 @@ pub async fn start_recording(
         .map_err(|e| format!("Failed to start recording: {}", e))?;
 
     *recording = Some(handle);
+
+    // Swap tray icon to recording (red) variant
+    set_tray_recording(&app, true);
+
+    // Send system notification
+    let _ = app
+        .notification()
+        .builder()
+        .title("Rustler")
+        .body("Recording started")
+        .show();
 
     // Emit recording status to all windows
     let _ = app.emit(
@@ -61,6 +90,17 @@ pub async fn stop_recording(
     let handle = recording
         .take()
         .ok_or_else(|| "No recording in progress".to_string())?;
+
+    // Swap tray icon back to normal
+    set_tray_recording(&app, false);
+
+    // Send system notification
+    let _ = app
+        .notification()
+        .builder()
+        .title("Rustler")
+        .body("Recording stopped — transcribing...")
+        .show();
 
     // Emit recording stopped status to all windows
     let _ = app.emit(

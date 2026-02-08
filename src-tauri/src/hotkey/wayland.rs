@@ -30,6 +30,8 @@ pub fn reset_portal_state() {
 pub struct WaylandHotkeyManager {
     /// Channel to send shutdown signal to the listener task
     shutdown_tx: Arc<Mutex<Option<mpsc::Sender<()>>>>,
+    /// Handle to the spawned listener task so we can await its termination
+    listener_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl WaylandHotkeyManager {
@@ -37,6 +39,7 @@ impl WaylandHotkeyManager {
     pub fn new() -> Self {
         Self {
             shutdown_tx: Arc::new(Mutex::new(None)),
+            listener_handle: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -73,8 +76,8 @@ impl WaylandHotkeyManager {
             .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
             .is_err()
         {
-            log::warn!("Wayland: Registration already in progress, skipping duplicate call");
-            return Ok(());
+            log::warn!("Wayland: Registration already in progress, rejecting duplicate call");
+            return Err("Registration already in progress, please wait for the current registration to complete.".to_string());
         }
 
         // Ensure we reset the flag when done (using a guard pattern)
@@ -86,8 +89,10 @@ impl WaylandHotkeyManager {
         }
         let _guard = RegistrationGuard;
 
-        // Stop any existing listener
-        self.stop_listener();
+        // Stop any existing listener and wait for it to fully terminate.
+        // This ensures the old GlobalShortcuts proxy and D-Bus session are dropped
+        // before we create new ones, preventing GNOME from auto-approving bind_shortcuts.
+        self.stop_listener_and_wait().await;
 
         // Create the portal proxy with timeout (5 seconds should be enough for connection)
         let shortcuts = tokio::time::timeout(
@@ -169,16 +174,32 @@ impl WaylandHotkeyManager {
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel::<()>(1);
         *self.shutdown_tx.lock() = Some(shutdown_tx);
 
+        // Create oneshot channel so the listener task can confirm it's ready
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel::<Result<(), String>>();
+
         // Clone shortcut_id for the async task
         let shortcut_id_owned = shortcut_id.to_string();
         let callback = Arc::new(callback);
 
-        // Spawn task to listen for activation events
-        tokio::spawn(async move {
+        // Spawn task to listen for activation events.
+        // The session is moved into the task so it stays alive for the duration
+        // of the listener, and is explicitly closed on shutdown. Without this,
+        // the portal session becomes a zombie (Session has no Drop impl) and
+        // GNOME will auto-approve subsequent bind_shortcuts without showing
+        // the configuration dialog.
+        let handle = tokio::spawn(async move {
             let activated_stream = match shortcuts.receive_activated().await {
-                Ok(stream) => stream,
+                Ok(stream) => {
+                    let _ = ready_tx.send(Ok(()));
+                    stream
+                }
                 Err(e) => {
                     log::error!("Wayland: Failed to receive activated stream: {}", e);
+                    let _ = ready_tx.send(Err(format!("Failed to start shortcut listener: {}", e)));
+                    // Close the session before returning since we won't be listening
+                    if let Err(e) = session.close().await {
+                        log::warn!("Wayland: Failed to close session on error path: {}", e);
+                    }
                     return;
                 }
             };
@@ -202,20 +223,82 @@ impl WaylandHotkeyManager {
                 }
             }
 
+            // Explicitly close the portal session so GNOME knows to clean it up.
+            // This is critical: without it, the old session persists and GNOME
+            // will auto-approve the next bind_shortcuts without showing the dialog.
+            log::info!("Wayland: Closing portal session...");
+            if let Err(e) = session.close().await {
+                log::warn!("Wayland: Failed to close portal session: {}", e);
+            } else {
+                log::info!("Wayland: Portal session closed successfully");
+            }
+
             log::info!("Wayland: Listener task ended");
         });
 
-        log::info!("Wayland: Hotkey registered successfully");
+        // Store the handle so we can await it during shutdown
+        *self.listener_handle.lock() = Some(handle);
+
+        // Wait for listener to confirm it's ready (with timeout)
+        match tokio::time::timeout(std::time::Duration::from_secs(5), ready_rx).await {
+            Ok(Ok(Ok(()))) => {
+                log::info!("Wayland: Hotkey registered and listener confirmed ready");
+            }
+            Ok(Ok(Err(e))) => {
+                return Err(e);
+            }
+            Ok(Err(_)) => {
+                return Err(
+                    "Listener task exited unexpectedly before confirming readiness.".to_string(),
+                );
+            }
+            Err(_) => {
+                log::warn!("Wayland: Listener readiness confirmation timed out, proceeding anyway");
+            }
+        }
+
         Ok(())
     }
 
-    /// Stops the listener task
-    fn stop_listener(&self) {
-        if let Some(tx) = self.shutdown_tx.lock().take() {
-            // Try to send shutdown signal (ignore if receiver is gone)
+    /// Sends shutdown signal and awaits the listener task to fully terminate.
+    /// This ensures the old portal session is closed and the D-Bus proxy is dropped
+    /// before creating a new session, preventing GNOME from auto-approving bind_shortcuts.
+    async fn stop_listener_and_wait(&self) {
+        let tx = self.shutdown_tx.lock().take();
+        let handle = self.listener_handle.lock().take();
+
+        if let Some(tx) = tx {
             let _ = tx.try_send(());
             log::info!("Wayland: Sent shutdown signal to listener");
         }
+
+        if let Some(handle) = handle {
+            // Use tokio::pin so we can abort the handle if the timeout fires
+            let abort_handle = handle.abort_handle();
+            match tokio::time::timeout(std::time::Duration::from_secs(5), handle).await {
+                Ok(Ok(())) => {
+                    log::info!("Wayland: Previous listener task terminated cleanly");
+                }
+                Ok(Err(e)) => {
+                    log::warn!("Wayland: Previous listener task panicked: {}", e);
+                }
+                Err(_) => {
+                    // Task didn't stop in time — abort it to force-drop the session/proxy
+                    log::warn!("Wayland: Timed out waiting for previous listener, aborting task");
+                    abort_handle.abort();
+                }
+            }
+        }
+    }
+
+    /// Stops the listener task (sync, best-effort — used in Drop and unregister)
+    fn stop_listener(&self) {
+        if let Some(tx) = self.shutdown_tx.lock().take() {
+            let _ = tx.try_send(());
+            log::info!("Wayland: Sent shutdown signal to listener");
+        }
+        // Take the handle to allow the task to be cleaned up, but don't await it
+        let _ = self.listener_handle.lock().take();
     }
 
     /// Unregisters the current shortcut and stops the listener
@@ -285,5 +368,6 @@ mod tests {
     fn test_new_creates_manager() {
         let manager = WaylandHotkeyManager::new();
         assert!(manager.shutdown_tx.lock().is_none());
+        assert!(manager.listener_handle.lock().is_none());
     }
 }

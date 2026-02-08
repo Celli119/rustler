@@ -14,7 +14,7 @@ export type RecordingState = "idle" | "recording" | "processing" | "done";
 /**
  * Hook that provides recording state based on backend events.
  * This is the single source of truth for recording state.
- * Both the main window and overlay should use this hook.
+ * The main window should use this hook.
  */
 export function useRecordingState() {
   const [state, setState] = useState<RecordingState>("idle");

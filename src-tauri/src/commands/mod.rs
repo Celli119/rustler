@@ -16,8 +16,5 @@ pub mod hotkey;
 /// Commands for clipboard operations
 pub mod clipboard;
 
-/// Commands for overlay window control
-pub mod overlay;
-
 /// Commands for transcription history
 pub mod history;

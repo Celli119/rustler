@@ -1,16 +1,10 @@
 import { useEffect } from "react";
 import { useThemeStore } from "@/stores/themeStore";
 
-// Check if this is the overlay window
-const isOverlay = new URLSearchParams(window.location.search).get("overlay") === "true";
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme } = useThemeStore();
 
   useEffect(() => {
-    // Skip theme application for overlay window to preserve transparency
-    if (isOverlay) return;
-
     const root = document.documentElement;
 
     const applyTheme = (isDark: boolean) => {

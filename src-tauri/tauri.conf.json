@@ -21,20 +21,6 @@
         "resizable": true,
         "fullscreen": false,
         "decorations": false
-      },
-      {
-        "label": "overlay",
-        "title": "",
-        "url": "/?overlay=true",
-        "width": 78,
-        "height": 78,
-        "resizable": false,
-        "decorations": false,
-        "transparent": true,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "visible": true,
-        "focus": false
       }
     ],
     "security": {
