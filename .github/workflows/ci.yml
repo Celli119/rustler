@@ -12,6 +12,12 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+      CMAKE_C_COMPILER_LAUNCHER: "sccache"
+      CMAKE_CXX_COMPILER_LAUNCHER: "sccache"
+      CMAKE_CUDA_COMPILER_LAUNCHER: "sccache"
     steps:
       - uses: actions/checkout@v4
 
@@ -46,11 +52,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-1 libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev wl-clipboard wtype xclip xdotool
 
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-          cache-on-failure: true
+      - name: Run sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Run Clippy
         working-directory: src-tauri
@@ -62,6 +65,11 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+      CMAKE_C_COMPILER_LAUNCHER: "sccache"
+      CMAKE_CXX_COMPILER_LAUNCHER: "sccache"
     steps:
       - uses: actions/checkout@v4
 
@@ -89,11 +97,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-1 libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev wl-clipboard wtype xclip xdotool
 
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-          cache-on-failure: true
+      - name: Run sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -110,6 +115,12 @@ jobs:
           fail_ci_if_error: false
 
   build:
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+      CMAKE_C_COMPILER_LAUNCHER: "sccache"
+      CMAKE_CXX_COMPILER_LAUNCHER: "sccache"
+      CMAKE_CUDA_COMPILER_LAUNCHER: "sccache"
     strategy:
       fail-fast: false
       matrix:
@@ -166,11 +177,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf libasound2-dev libfuse2 libgtk-3-dev libgdk-pixbuf2.0-dev libclang-dev wl-clipboard wtype xclip xdotool
 
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-          cache-on-failure: true
+      - name: Run sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Build application
         run: |
