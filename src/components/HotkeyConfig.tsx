@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useHotkey } from "@/hooks/useHotkey";
 import { useSettings } from "@/hooks/useSettings";
+import { isWaylandSession } from "@/lib/tauri";
 
 export function HotkeyConfig() {
   const { settings, updateHotkey } = useSettings();
   const { isRecording, startRecording, stopRecording, getHotkeyString, validateHotkey } =
     useHotkey();
   const [error, setError] = useState<string | null>(null);
+  const [isWayland, setIsWayland] = useState(false);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+
+  useEffect(() => {
+    isWaylandSession()
+      .then(setIsWayland)
+      .catch(() => setIsWayland(false));
+  }, []);
 
   const handleRecordClick = () => {
     if (isRecording) {
@@ -24,6 +33,21 @@ export function HotkeyConfig() {
     } else {
       setError(null);
       startRecording();
+    }
+  };
+
+  const handleWaylandConfigure = async () => {
+    setError(null);
+    setIsConfiguring(true);
+    try {
+      await updateHotkey(settings.hotkey);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : typeof err === "string" ? err : "Unknown error";
+      setError(`Failed to configure hotkey: ${message}`);
+      console.error(err);
+    } finally {
+      setIsConfiguring(false);
     }
   };
 
@@ -49,13 +73,21 @@ export function HotkeyConfig() {
               {isRecording ? getHotkeyString() || "Press keys..." : settings.hotkey}
             </code>
           </div>
-          <Button onClick={handleRecordClick} variant={isRecording ? "destructive" : "default"}>
-            {isRecording ? "Stop Recording" : "Record Hotkey"}
-          </Button>
+          {isWayland ? (
+            <Button onClick={handleWaylandConfigure} disabled={isConfiguring}>
+              {isConfiguring ? "Configuring..." : "Change Hotkey"}
+            </Button>
+          ) : (
+            <Button onClick={handleRecordClick} variant={isRecording ? "destructive" : "default"}>
+              {isRecording ? "Stop Recording" : "Record Hotkey"}
+            </Button>
+          )}
         </div>
         {error && <p className="text-sm text-destructive mt-2">{error}</p>}
         <p className="text-xs text-muted-foreground mt-2">
-          Click "Record Hotkey" and press your desired key combination
+          {isWayland
+            ? 'Click "Change Hotkey" to open the system shortcut configuration'
+            : 'Click "Record Hotkey" and press your desired key combination'}
         </p>
       </div>
     </div>

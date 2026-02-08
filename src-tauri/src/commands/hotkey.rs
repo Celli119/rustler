@@ -2,7 +2,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[cfg(target_os = "linux")]
-use crate::hotkey::wayland::{reset_portal_state, WaylandHotkeyManager};
+use crate::hotkey::wayland::{clear_stored_shortcuts, reset_portal_state, WaylandHotkeyManager};
 #[cfg(target_os = "linux")]
 use std::sync::OnceLock;
 
@@ -43,7 +43,8 @@ pub async fn register_hotkey(app: AppHandle, shortcut: String) -> Result<(), Str
     #[cfg(target_os = "linux")]
     if is_wayland() {
         log::info!("Detected Wayland session, using xdg-desktop-portal for global shortcuts");
-        return register_hotkey_wayland(app, shortcut).await;
+        register_hotkey_wayland(app, shortcut).await?;
+        return Ok(());
     }
 
     // Use tauri-plugin-global-shortcut for X11/macOS/Windows
@@ -51,8 +52,12 @@ pub async fn register_hotkey(app: AppHandle, shortcut: String) -> Result<(), Str
 }
 
 /// Register hotkey using Wayland portal (Linux only)
+/// Returns the actual trigger description from the GNOME dialog if available
 #[cfg(target_os = "linux")]
-async fn register_hotkey_wayland(app: AppHandle, shortcut: String) -> Result<(), String> {
+async fn register_hotkey_wayland(
+    app: AppHandle,
+    shortcut: String,
+) -> Result<Option<String>, String> {
     let manager = get_wayland_manager();
 
     // Create callback that emits event to frontend
@@ -66,13 +71,13 @@ async fn register_hotkey_wayland(app: AppHandle, shortcut: String) -> Result<(),
         }
     };
 
-    // Register the shortcut
-    manager
+    // Register the shortcut — returns the actual trigger from the GNOME dialog
+    let actual_trigger = manager
         .register("record-toggle", "Toggle Recording", &shortcut, callback)
         .await?;
 
     log::info!("Wayland hotkey registered successfully: {}", shortcut);
-    Ok(())
+    Ok(actual_trigger)
 }
 
 /// Register hotkey using native tauri plugin (X11/macOS/Windows)
@@ -125,18 +130,26 @@ pub fn is_wayland_session() -> bool {
 }
 
 /// Reset Wayland portal state and re-register hotkey
-/// This forces the xdg-desktop-portal dialog to appear again
+/// This forces the xdg-desktop-portal dialog to appear again.
+/// Returns the actual trigger description from the GNOME dialog if available.
 #[tauri::command]
-pub async fn reset_wayland_hotkey(app: AppHandle, shortcut: String) -> Result<(), String> {
+pub async fn reset_wayland_hotkey(
+    app: AppHandle,
+    shortcut: String,
+) -> Result<Option<String>, String> {
     #[cfg(target_os = "linux")]
     if is_wayland() {
         log::info!("Resetting Wayland portal state and re-registering hotkey");
         reset_portal_state();
+        // Clear stored shortcuts from dconf so GNOME shows the configuration
+        // dialog again. Without this, bind_shortcuts auto-approves silently.
+        clear_stored_shortcuts("com.rustler.desktop");
         return register_hotkey_wayland(app, shortcut).await;
     }
 
     // On non-Wayland, just do normal registration
-    register_hotkey(app, shortcut).await
+    register_hotkey(app, shortcut).await?;
+    Ok(None)
 }
 
 /// Unregisters all global hotkeys

@@ -61,16 +61,23 @@ export function useSettings() {
       try {
         hotkeyRegistered = true;
 
-        // On Wayland, use resetWaylandHotkey to force the dialog to appear
+        // On Wayland, use resetWaylandHotkey to force the dialog to appear.
+        // The backend returns the actual trigger the user set in the GNOME dialog,
+        // which may differ from what was captured in the frontend.
         const isWayland = await isWaylandSession();
+        let actualHotkey = hotkey;
         if (isWayland) {
           console.log("Wayland detected, using resetWaylandHotkey to show portal dialog");
-          await resetWaylandHotkey(hotkey);
+          const trigger = await resetWaylandHotkey(hotkey);
+          if (trigger) {
+            console.log("GNOME dialog returned actual trigger:", trigger);
+            actualHotkey = trigger;
+          }
         } else {
           await registerHotkey(hotkey);
         }
 
-        await updateSettings({ hotkey });
+        await updateSettings({ hotkey: actualHotkey });
       } catch (error) {
         console.error("Failed to update hotkey:", error);
         hotkeyRegistered = false;

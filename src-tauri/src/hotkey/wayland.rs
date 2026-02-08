@@ -26,6 +26,35 @@ pub fn reset_portal_state() {
     log::info!("Wayland: Portal unavailable flag reset, will retry on next registration");
 }
 
+/// Clear stored shortcuts for our app from GNOME dconf.
+/// This forces the GNOME shortcuts configuration dialog to reappear on the next
+/// bind_shortcuts call, since GNOME auto-approves shortcuts it already knows about.
+pub fn clear_stored_shortcuts(app_id: &str) {
+    let dconf_path = format!("/org/gnome/settings-daemon/global-shortcuts/{app_id}/");
+    log::info!(
+        "Wayland: Clearing stored shortcuts from dconf at {}",
+        dconf_path
+    );
+    match std::process::Command::new("dconf")
+        .args(["reset", "-f", &dconf_path])
+        .output()
+    {
+        Ok(output) => {
+            if output.status.success() {
+                log::info!("Wayland: Cleared stored shortcuts from dconf");
+            } else {
+                log::warn!(
+                    "Wayland: dconf reset failed: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+        }
+        Err(e) => {
+            log::warn!("Wayland: Failed to run dconf: {}", e);
+        }
+    }
+}
+
 /// Manages global shortcuts on Wayland via xdg-desktop-portal
 pub struct WaylandHotkeyManager {
     /// Channel to send shutdown signal to the listener task
@@ -50,13 +79,15 @@ impl WaylandHotkeyManager {
     /// * `description` - Human-readable description (e.g., "Toggle Recording")
     /// * `preferred_trigger` - Preferred key combination (e.g., "Alt+E")
     /// * `callback` - Function to call when the shortcut is activated
+    ///
+    /// Returns the actual trigger description from the GNOME dialog if available.
     pub async fn register<F>(
         &self,
         shortcut_id: &str,
         description: &str,
         preferred_trigger: &str,
         callback: F,
-    ) -> Result<(), String>
+    ) -> Result<Option<String>, String>
     where
         F: Fn() + Send + Sync + 'static,
     {
@@ -153,8 +184,8 @@ impl WaylandHotkeyManager {
             format!("Failed to bind shortcut: {}. Please use the in-app recording button instead.", e)
         })?;
 
-        // Get the response (not async)
-        let _response = request
+        // Get the response which contains the actual bound shortcuts
+        let response = request
             .response()
             .map_err(|e| {
                 // "Other" error usually means user cancelled the dialog
@@ -168,7 +199,22 @@ impl WaylandHotkeyManager {
                 }
             })?;
 
-        log::info!("Wayland: Shortcut bound successfully, starting listener...");
+        // Extract the actual trigger description from the response — this is what
+        // the user chose in the GNOME dialog, which may differ from preferred_trigger
+        let actual_trigger = response
+            .shortcuts()
+            .iter()
+            .find(|s| s.id() == shortcut_id)
+            .map(|s| s.trigger_description().to_string());
+
+        if let Some(ref trigger) = actual_trigger {
+            log::info!(
+                "Wayland: Shortcut bound successfully with trigger: {}",
+                trigger
+            );
+        } else {
+            log::info!("Wayland: Shortcut bound successfully (no trigger description in response)");
+        }
 
         // Create shutdown channel
         let (shutdown_tx, mut shutdown_rx) = mpsc::channel::<()>(1);
@@ -257,7 +303,7 @@ impl WaylandHotkeyManager {
             }
         }
 
-        Ok(())
+        Ok(actual_trigger)
     }
 
     /// Sends shutdown signal and awaits the listener task to fully terminate.

@@ -78,7 +78,7 @@ export async function isWaylandSession(): Promise<boolean> {
   return invoke("is_wayland_session");
 }
 
-export async function resetWaylandHotkey(shortcut: string): Promise<void> {
+export async function resetWaylandHotkey(shortcut: string): Promise<string | null> {
   return invoke("reset_wayland_hotkey", { shortcut });
 }
 
