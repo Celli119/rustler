@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { GpuToggle } from "@/components/GpuToggle";
 import { useSettings } from "@/hooks/useSettings";
 
@@ -29,8 +30,17 @@ export function SettingsTab() {
 
   const handleLanguageChange = (language: string | null) => {
     if (language) {
-      updateSettings({ language });
+      // Disable translate when switching to English
+      if (language === "en" && settings.translate) {
+        updateSettings({ language, translate: false });
+      } else {
+        updateSettings({ language });
+      }
     }
+  };
+
+  const handleTranslateToggle = (checked: boolean) => {
+    updateSettings({ translate: checked });
   };
 
   return (
@@ -56,6 +66,21 @@ export function SettingsTab() {
               </SelectContent>
             </Select>
           </div>
+          {settings.language !== "en" && (
+            <div className="flex items-center justify-between space-x-2 mt-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="translate-toggle">Translate to English</Label>
+                <p className="text-sm text-muted-foreground">
+                  Transcribe in the selected language and translate the output to English
+                </p>
+              </div>
+              <Switch
+                id="translate-toggle"
+                checked={settings.translate}
+                onCheckedChange={handleTranslateToggle}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 

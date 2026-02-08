@@ -7,6 +7,7 @@ export interface Settings {
   model: string;
   useGpu: boolean;
   language: string;
+  translate: boolean;
 }
 
 export interface WhisperModel {

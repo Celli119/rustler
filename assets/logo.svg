@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9935a"/>
+      <stop offset="100%" stop-color="#d4984f"/>
+    </linearGradient>
+    <linearGradient id="dune1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cd7f32"/>
+      <stop offset="100%" stop-color="#b45328"/>
+    </linearGradient>
+    <linearGradient id="dune2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45328"/>
+      <stop offset="100%" stop-color="#8b4513"/>
+    </linearGradient>
+    <linearGradient id="dune3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b4513"/>
+      <stop offset="100%" stop-color="#6b3410"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8c496"/>
+      <stop offset="50%" stop-color="#c9935a"/>
+      <stop offset="100%" stop-color="#d4984f"/>
+    </linearGradient>
+    <clipPath id="circle">
+      <circle cx="200" cy="150" r="120"/>
+    </clipPath>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Icon circle -->
+  <circle cx="200" cy="150" r="120" fill="url(#bg)" filter="url(#shadow)"/>
+
+  <!-- Dune layers clipped to circle -->
+  <g clip-path="url(#circle)">
+    <!-- Back dune -->
+    <path d="M 80 183 Q 140 138, 200 162 Q 260 193, 320 150 Q 360 118, 320 150 L 320 270 L 80 270 Z" fill="url(#dune1)"/>
+    <!-- Middle dune -->
+    <path d="M 80 210 Q 140 188, 200 200 Q 260 218, 320 195 Q 340 185, 320 200 L 320 270 L 80 270 Z" fill="url(#dune2)"/>
+    <!-- Front dune -->
+    <path d="M 80 240 Q 150 228, 200 236 Q 260 248, 320 232 L 320 270 L 80 270 Z" fill="url(#dune3)"/>
+  </g>
+
+  <!-- Text: Rustler -->
+  <text x="200" y="330" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="56" font-weight="700" fill="url(#textGrad)" text-anchor="middle" letter-spacing="-1">Rustler</text>
+
+  <!-- Subtitle -->
+  <text x="200" y="365" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="400" fill="#a0846a" text-anchor="middle" letter-spacing="3">SPEECH-TO-TEXT</text>
+</svg>

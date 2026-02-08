@@ -18,6 +18,9 @@ pub struct Settings {
     pub use_gpu: bool,
     /// Language code for transcription (e.g., "en", "es")
     pub language: String,
+    /// Whether to translate non-English speech to English
+    #[serde(default)]
+    pub translate: bool,
 }
 
 impl Default for Settings {
@@ -27,6 +30,7 @@ impl Default for Settings {
             model: "base".to_string(),
             use_gpu: false,
             language: "en".to_string(),
+            translate: false,
         }
     }
 }
@@ -163,6 +167,7 @@ mod tests {
         assert_eq!(settings.model, "base");
         assert!(!settings.use_gpu);
         assert_eq!(settings.language, "en");
+        assert!(!settings.translate);
     }
 
     #[test]
@@ -172,6 +177,7 @@ mod tests {
             model: "large".to_string(),
             use_gpu: true,
             language: "es".to_string(),
+            translate: true,
         };
 
         let cloned = settings.clone();
@@ -180,6 +186,7 @@ mod tests {
         assert_eq!(cloned.model, settings.model);
         assert_eq!(cloned.use_gpu, settings.use_gpu);
         assert_eq!(cloned.language, settings.language);
+        assert_eq!(cloned.translate, settings.translate);
     }
 
     #[test]
@@ -199,6 +206,7 @@ mod tests {
             model: "medium".to_string(),
             use_gpu: true,
             language: "fr".to_string(),
+            translate: true,
         };
 
         // Serialize to JSON
@@ -214,6 +222,7 @@ mod tests {
         assert_eq!(deserialized.model, settings.model);
         assert_eq!(deserialized.use_gpu, settings.use_gpu);
         assert_eq!(deserialized.language, settings.language);
+        assert_eq!(deserialized.translate, settings.translate);
     }
 
     #[test]
@@ -284,6 +293,7 @@ mod tests {
             model: "small".to_string(),
             use_gpu: true,
             language: "ja".to_string(),
+            translate: true,
         };
 
         // Write settings
@@ -296,6 +306,7 @@ mod tests {
         assert_eq!(loaded.model, original.model);
         assert_eq!(loaded.use_gpu, original.use_gpu);
         assert_eq!(loaded.language, original.language);
+        assert_eq!(loaded.translate, original.translate);
 
         cleanup_test_dir(&test_dir);
     }

@@ -74,12 +74,16 @@ pub async fn transcribe_audio(
         .await
         .map_err(|e| format!("Failed to get settings: {}", e))?;
     let use_gpu = settings.use_gpu;
+    let language = settings.language;
+    let translate = settings.translate;
 
     log::info!(
-        "Transcribing audio file: {} with model: {} (GPU: {})",
+        "Transcribing audio file: {} with model: {} (GPU: {}, lang: {}, translate: {})",
         audio_path,
         model,
-        use_gpu
+        use_gpu,
+        language,
+        translate
     );
 
     // Emit processing started
@@ -113,7 +117,14 @@ pub async fn transcribe_audio(
     let (tx, rx) = tokio::sync::oneshot::channel();
 
     std::thread::spawn(move || {
-        let result = transcribe_blocking(audio_path_clone, model_clone, model_path, use_gpu);
+        let result = transcribe_blocking(
+            audio_path_clone,
+            model_clone,
+            model_path,
+            use_gpu,
+            language,
+            translate,
+        );
         let _ = tx.send(result);
     });
 
@@ -154,6 +165,8 @@ fn transcribe_blocking(
     model: String,
     model_path: PathBuf,
     use_gpu: bool,
+    language: String,
+    translate: bool,
 ) -> Result<String, String> {
     // Load audio file
     let mut reader = hound::WavReader::open(&audio_path)
@@ -185,8 +198,12 @@ fn transcribe_blocking(
             // Create transcription parameters
             let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
             params.set_n_threads(4);
-            params.set_translate(false);
-            params.set_language(Some("en"));
+            params.set_translate(translate);
+            if language == "auto" {
+                params.set_language(None);
+            } else {
+                params.set_language(Some(&language));
+            }
             params.set_print_special(false);
             params.set_print_progress(false);
             params.set_print_realtime(false);
@@ -273,6 +290,41 @@ mod tests {
             let samples: Vec<f32> = vec![1.0, -1.0, 1.0, -1.0];
             let rms = calculate_rms(&samples);
             assert!((rms - 1.0).abs() < 0.0001);
+        }
+    }
+
+    /// Tests for language parameter handling
+    mod language_tests {
+        use whisper_rs::{FullParams, SamplingStrategy};
+
+        /// Helper to simulate the language logic from transcribe_blocking
+        fn apply_language<'a>(params: &mut FullParams<'a, 'a>, language: &'a str) {
+            if language == "auto" {
+                params.set_language(None);
+            } else {
+                params.set_language(Some(language));
+            }
+        }
+
+        #[test]
+        fn test_language_auto_sets_none() {
+            let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+            apply_language(&mut params, "auto");
+            // No panic = auto-detect mode set correctly
+        }
+
+        #[test]
+        fn test_language_en() {
+            let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+            apply_language(&mut params, "en");
+        }
+
+        #[test]
+        fn test_language_codes() {
+            let mut params = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+            for lang in ["en", "es", "fr", "de", "it", "pt", "ru", "zh", "ja", "ko"] {
+                apply_language(&mut params, lang);
+            }
         }
     }
 

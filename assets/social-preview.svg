@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1412"/>
+      <stop offset="50%" stop-color="#0c0a09"/>
+      <stop offset="100%" stop-color="#1a1210"/>
+    </linearGradient>
+    <linearGradient id="dune1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#cd7f32"/>
+      <stop offset="100%" stop-color="#b45328"/>
+    </linearGradient>
+    <linearGradient id="dune2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45328"/>
+      <stop offset="100%" stop-color="#8b4513"/>
+    </linearGradient>
+    <linearGradient id="dune3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b4513"/>
+      <stop offset="100%" stop-color="#6b3410"/>
+    </linearGradient>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c9935a"/>
+      <stop offset="100%" stop-color="#d4984f"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8c496"/>
+      <stop offset="50%" stop-color="#c9935a"/>
+      <stop offset="100%" stop-color="#d4984f"/>
+    </linearGradient>
+    <linearGradient id="subtextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a0846a"/>
+      <stop offset="100%" stop-color="#c9935a"/>
+    </linearGradient>
+    <clipPath id="iconClip">
+      <circle cx="340" cy="260" r="80"/>
+    </clipPath>
+    <!-- Glow filter for the icon -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="url(#bg)"/>
+
+  <!-- Subtle dune landscape at the bottom -->
+  <path d="M 0 480 Q 160 420, 320 450 Q 480 490, 640 440 Q 800 390, 960 430 Q 1120 470, 1280 420 L 1280 640 L 0 640 Z" fill="url(#dune1)" opacity="0.3"/>
+  <path d="M 0 520 Q 200 480, 400 510 Q 600 540, 800 500 Q 1000 460, 1280 500 L 1280 640 L 0 640 Z" fill="url(#dune2)" opacity="0.25"/>
+  <path d="M 0 570 Q 320 540, 640 560 Q 960 580, 1280 550 L 1280 640 L 0 640 Z" fill="url(#dune3)" opacity="0.2"/>
+
+  <!-- App icon (small dune circle) -->
+  <circle cx="340" cy="260" r="80" fill="url(#iconBg)" filter="url(#glow)"/>
+  <g clip-path="url(#iconClip)">
+    <path d="M 260 290 Q 295 255, 330 272 Q 365 295, 400 262 Q 425 235, 420 255 L 420 340 L 260 340 Z" fill="url(#dune1)"/>
+    <path d="M 260 310 Q 305 290, 340 302 Q 375 318, 410 298 Q 418 292, 420 302 L 420 340 L 260 340 Z" fill="url(#dune2)"/>
+    <path d="M 260 325 Q 320 315, 370 322 Q 400 330, 420 318 L 420 340 L 260 340 Z" fill="url(#dune3)"/>
+  </g>
+
+  <!-- App name -->
+  <text x="460" y="240" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="72" font-weight="700" fill="url(#textGrad)" letter-spacing="-1">Rustler</text>
+
+  <!-- Tagline -->
+  <text x="460" y="290" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="24" font-weight="400" fill="url(#subtextGrad)">Local speech-to-text. Private by design.</text>
+
+  <!-- Feature pills -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" font-weight="500">
+    <!-- Whisper -->
+    <rect x="460" y="320" rx="14" ry="14" width="110" height="28" fill="#c9935a" opacity="0.15" stroke="#c9935a" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="515" y="339" fill="#c9935a" text-anchor="middle">Whisper</text>
+
+    <!-- Rust -->
+    <rect x="585" y="320" rx="14" ry="14" width="80" height="28" fill="#c9935a" opacity="0.15" stroke="#c9935a" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="625" y="339" fill="#c9935a" text-anchor="middle">Rust</text>
+
+    <!-- Tauri v2 -->
+    <rect x="680" y="320" rx="14" ry="14" width="100" height="28" fill="#c9935a" opacity="0.15" stroke="#c9935a" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="730" y="339" fill="#c9935a" text-anchor="middle">Tauri v2</text>
+
+    <!-- CUDA -->
+    <rect x="795" y="320" rx="14" ry="14" width="85" height="28" fill="#c9935a" opacity="0.15" stroke="#c9935a" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="837" y="339" fill="#c9935a" text-anchor="middle">CUDA</text>
+
+    <!-- Linux -->
+    <rect x="895" y="320" rx="14" ry="14" width="85" height="28" fill="#c9935a" opacity="0.15" stroke="#c9935a" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="937" y="339" fill="#c9935a" text-anchor="middle">Linux</text>
+  </g>
+
+  <!-- Bottom tagline -->
+  <text x="640" y="600" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="16" font-weight="400" fill="#6b5540" text-anchor="middle">Your voice, your hardware, your data. Nothing crosses the wire.</text>
+</svg>
