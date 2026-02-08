@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:x11": "GDK_BACKEND=x11 WAYLAND_DISPLAY= bunx tauri dev",
-    "tauri:dev": "bunx tauri dev",
+    "tauri:dev": "systemd-run --user --scope -u app-gnome-com.rustler.desktop-$RANDOM -- bunx tauri dev",
     "tauri:dev:x11": "GDK_BACKEND=x11 WAYLAND_DISPLAY= bunx tauri dev",
     "build": "tsgo -b && vite build",
     "typecheck": "tsgo --noEmit",
@@ -78,7 +78,7 @@
     ],
     "src-tauri/**/*.rs": [
       "bash -c 'cd src-tauri && cargo fmt --check'",
-      "bash -c 'cd src-tauri && cargo clippy --all-targets -- -D warnings'"
+      "bash -c 'cd src-tauri && cargo clippy --all-targets --features cuda -- -D warnings'"
     ]
   }
 }

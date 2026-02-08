@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories=
+Comment=Speech-to-text desktop app using Whisper
+Exec=rustler
+StartupWMClass=rustler
+Icon=rustler
+Name=Rustler
+Terminal=false
+Type=Application

@@ -43,10 +43,16 @@
         "bundleMediaFramework": false
       },
       "deb": {
-        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"]
+        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"],
+        "files": {
+          "resources/com.rustler.desktop.desktop": "/usr/share/applications/com.rustler.desktop.desktop"
+        }
       },
       "rpm": {
-        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"]
+        "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"],
+        "files": {
+          "resources/com.rustler.desktop.desktop": "/usr/share/applications/com.rustler.desktop.desktop"
+        }
       }
     }
   }
