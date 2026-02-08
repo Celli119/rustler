@@ -61,20 +61,22 @@ pub fn run() {
             // Start the model cache cleanup task (unloads models after 5 min of inactivity)
             whisper::cache::start_cleanup_task();
 
-            // Setup system tray icon
+            // Setup system tray icon with menu
             #[cfg(desktop)]
             {
                 use tauri::image::Image;
-                use tauri::menu::MenuBuilder;
+                use tauri::menu::{MenuBuilder, MenuItemBuilder};
                 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 
-                // Load the tray icon from embedded PNG bytes
-                // On Linux, the icon may not show without a menu, so we create an empty one
                 let tray_icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))
                     .expect("Failed to load tray icon");
 
-                // Create an empty menu (required on Linux for the icon to be visible)
-                let menu = MenuBuilder::new(app).build()?;
+                let show_item = MenuItemBuilder::new("Show Window").id("show").build(app)?;
+                let quit_item = MenuItemBuilder::new("Quit").id("quit").build(app)?;
+                let menu = MenuBuilder::new(app)
+                    .item(&show_item)
+                    .item(&quit_item)
+                    .build()?;
 
                 let _tray = TrayIconBuilder::with_id("main-tray")
                     .icon(tray_icon)
@@ -88,6 +90,18 @@ pub fn run() {
                             }
                         }
                     })
+                    .on_menu_event(|app, event| match event.id().as_ref() {
+                        "show" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    })
                     .build(app)?;
             }
 
@@ -95,8 +109,10 @@ pub fn run() {
         })
         .on_window_event(|window, event| {
             if window.label() == "main" {
-                if let WindowEvent::CloseRequested { .. } = event {
-                    window.app_handle().exit(0);
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    // Hide to tray instead of exiting so hotkey recording continues
+                    api.prevent_close();
+                    let _ = window.hide();
                 }
             }
         })

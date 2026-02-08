@@ -38,6 +38,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "licenseFile": "../LICENSE",
     "linux": {
       "appimage": {
         "bundleMediaFramework": false
@@ -45,13 +46,15 @@
       "deb": {
         "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"],
         "files": {
-          "resources/com.rustler.desktop.desktop": "/usr/share/applications/com.rustler.desktop.desktop"
+          "/usr/share/applications/com.rustler.desktop.desktop": "resources/com.rustler.desktop.desktop",
+          "/usr/share/applications/Rustler.desktop": "resources/Rustler-hidden.desktop"
         }
       },
       "rpm": {
         "depends": ["wl-clipboard", "wtype", "xclip", "xdotool"],
         "files": {
-          "resources/com.rustler.desktop.desktop": "/usr/share/applications/com.rustler.desktop.desktop"
+          "/usr/share/applications/com.rustler.desktop.desktop": "resources/com.rustler.desktop.desktop",
+          "/usr/share/applications/Rustler.desktop": "resources/Rustler-hidden.desktop"
         }
       }
     }
