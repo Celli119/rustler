@@ -89,6 +89,7 @@ jobs:
       - name: Upload frontend coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           flags: frontend
           fail_ci_if_error: false
@@ -114,6 +115,7 @@ jobs:
       - name: Upload Rust coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/rust-lcov.info
           flags: rust
           fail_ci_if_error: false
