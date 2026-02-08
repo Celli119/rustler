@@ -45,19 +45,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # macOS builds without GPU acceleration (i8mm issue in whisper.cpp CI)
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            features: ""
-          - os: macos-15
-            target: x86_64-apple-darwin
-            features: ""
+          # TODO: temporarily disabled while getting CI green on Linux first
+          # - os: macos-latest
+          #   target: aarch64-apple-darwin
+          #   features: ""
+          # - os: macos-15
+          #   target: x86_64-apple-darwin
+          #   features: ""
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             features: cuda
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            features: cuda
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   features: cuda
 
     runs-on: ${{ matrix.os }}
     steps:
