@@ -6,56 +6,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rustler</title>
   </head>
-  <body style="margin: 0; background: oklch(0.147 0.004 49.25);">
+  <body style="margin: 0; background: oklch(0.147 0.004 49.25)">
     <div id="root">
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        gap: 24px;
-        font-family: system-ui, -apple-system, sans-serif;
-        color: oklch(0.985 0.001 106.423);
-      ">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 80px; height: 80px;">
+      <style>
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes pulse-glow {
+          0%,
+          100% {
+            opacity: 0.6;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        .splash {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          animation: fade-in 0.4s ease-out;
+        }
+        .splash-icon {
+          width: 260px;
+          height: 260px;
+          filter: drop-shadow(0 6px 32px rgba(201, 147, 90, 0.3));
+        }
+        .splash-name {
+          margin-top: 28px;
+          font:
+            600 22px system-ui,
+            -apple-system,
+            sans-serif;
+          letter-spacing: 0.12em;
+          color: rgba(201, 147, 90, 0.85);
+        }
+        .splash-dots {
+          display: flex;
+          gap: 7px;
+          margin-top: 36px;
+          animation: pulse-glow 1.6s ease-in-out infinite;
+        }
+        .splash-dots span {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(201, 147, 90, 0.5);
+        }
+      </style>
+      <div class="splash">
+        <svg class="splash-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
           <defs>
             <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#c9935a"/>
-              <stop offset="100%" stop-color="#d4984f"/>
+              <stop offset="0%" stop-color="#c9935a" />
+              <stop offset="100%" stop-color="#d4984f" />
             </linearGradient>
             <linearGradient id="d1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#cd7f32"/>
-              <stop offset="100%" stop-color="#b45328"/>
+              <stop offset="0%" stop-color="#cd7f32" />
+              <stop offset="100%" stop-color="#b45328" />
             </linearGradient>
             <linearGradient id="d2" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#b45328"/>
-              <stop offset="100%" stop-color="#8b4513"/>
+              <stop offset="0%" stop-color="#b45328" />
+              <stop offset="100%" stop-color="#8b4513" />
             </linearGradient>
             <linearGradient id="d3" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#8b4513"/>
-              <stop offset="100%" stop-color="#6b3410"/>
+              <stop offset="0%" stop-color="#8b4513" />
+              <stop offset="100%" stop-color="#6b3410" />
             </linearGradient>
-            <clipPath id="c"><circle cx="256" cy="256" r="256"/></clipPath>
+            <clipPath id="c"><circle cx="256" cy="256" r="252" /></clipPath>
           </defs>
-          <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
-          <g clip-path="url(#c)">
-            <path d="M 0 284 Q 85 199, 171 238 Q 284 295, 398 216 Q 483 159, 512 199 L 512 512 L 0 512 Z" fill="url(#d1)"/>
-            <path d="M 0 341 Q 114 284, 227 312 Q 341 352, 455 295 Q 500 273, 512 295 L 512 512 L 0 512 Z" fill="url(#d2)"/>
-            <path d="M 0 409 Q 142 369, 256 398 Q 369 432, 512 386 L 512 512 L 0 512 Z" fill="url(#d3)"/>
+          <circle cx="256" cy="256" r="256" fill="url(#bg)" />
+          <g clip-path="url(#c)" shape-rendering="geometricPrecision">
+            <path
+              d="M 0 284 Q 85 199, 171 238 Q 284 295, 398 216 Q 483 159, 512 199 L 512 512 L 0 512 Z"
+              fill="url(#d1)"
+            />
+            <path
+              d="M 0 341 Q 114 284, 227 312 Q 341 352, 455 295 Q 500 273, 512 295 L 512 512 L 0 512 Z"
+              fill="url(#d2)"
+            />
+            <path
+              d="M 0 409 Q 142 369, 256 398 Q 369 432, 512 386 L 512 512 L 0 512 Z"
+              fill="url(#d3)"
+            />
           </g>
         </svg>
-        <div style="
-          width: 24px;
-          height: 24px;
-          border: 2px solid rgba(201, 147, 90, 0.3);
-          border-top-color: #c9935a;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        "></div>
+        <div class="splash-name">RUSTLER</div>
+        <div class="splash-dots"><span></span><span></span><span></span></div>
       </div>
-      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
     </div>
+    <script>
+      // Show window once splash HTML is rendered (runs before module scripts)
+      if (window.__TAURI_INTERNALS__) {
+        window.__TAURI_INTERNALS__.invoke("plugin:window|show", { label: "main" });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
